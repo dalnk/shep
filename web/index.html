@@ -643,6 +643,55 @@
       text-underline-offset: 4px;
     }
 
+    /* Origin Manifesto Section */
+    .origin-manifesto {
+      border-top: 1px solid var(--border-dark);
+      padding: 3.5rem 0 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .manifesto-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--signal-orange);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.85rem;
+      display: block;
+    }
+
+    .origin-manifesto h2 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      max-width: 680px;
+    }
+
+    .manifesto-content {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      line-height: 1.68;
+    }
+
+    .manifesto-content p {
+      margin-bottom: 1.25rem;
+    }
+
+    .manifesto-lead {
+      color: var(--text-main);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .manifesto-content a {
+      color: var(--text-main);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
     .cta-strip {
       padding: 2.75rem 0 3.5rem;
       text-align: center;
@@ -872,12 +921,26 @@
           <h3>Built on <a href="https://herdr.dev" target="_blank" rel="noopener">herdr.dev</a> Core</h3>
           <p>Shep connects to the <strong>herdr.dev</strong> ecosystem. It interfaces with its core orchestrator and is designed to support all upcoming herdr remotes, multi-machine bridges, session multiplexing, and swarm protocol updates.</p>
         </div>
+      </div>
+    </section>
 
-        <div class="instrument-cell ecosystem-unit" style="border-top: 1px dashed var(--border-light); background: transparent;">
-          <span class="cell-id">ORIGIN // WHY SHEP EXISTS</span>
-          <h3>Built because there was no Gemini remote</h3>
-          <p>There simply wasn't a dedicated, fast remote control app for Gemini and autonomous agent swarms. We like Gemini, and we built SHeP to steer swarms alongside our own agent, <strong>_</strong> (check out <a href="https://underclass.tech" target="_blank" rel="noopener" style="color: var(--text-main); text-decoration: underline; text-underline-offset: 3px;">underclass.tech</a>). We tested it across real hardware — from everyday Nothing and Pixel phones, to foldables, to the <a href="https://daylightcomputer.com" target="_blank" rel="noopener" style="color: var(--text-main); text-decoration: underline; text-underline-offset: 3px;">Daylight Computer</a> e-paper tablet.</p>
-        </div>
+    <!-- ORIGIN MANIFESTO SECTION -->
+    <section class="origin-manifesto">
+      <span class="manifesto-tag">ORIGIN // WHY WE BUILT SHEP</span>
+      <h2>We just want simple, reliable tools that work.</h2>
+      
+      <div class="manifesto-content">
+        <p class="manifesto-lead">
+          It is maddening how overcomplicated and fragile modern developer tools have become. Every tool tries to be an entire operating system, bundles hundreds of bloated features nobody asked for, forces you through web logins, and then fails at the one job it was actually supposed to do.
+        </p>
+
+        <p>
+          There simply wasn't a dedicated, fast remote control app for Gemini and autonomous agent swarms. We like Gemini. We use it daily. And we needed a clean, distraction-free way to steer our swarms alongside our own agent, <strong>_</strong> (check out <a href="https://underclass.tech" target="_blank" rel="noopener">underclass.tech</a>).
+        </p>
+
+        <p>
+          So we built SHeP: local-first, zero telemetry, zero cloud middleware. It does exactly what it says on the tin — connects to your machine over a local bridge, keeps sessions cached with 0ms latency, and lets you prompt, inspect, and unblock your swarms from any screen you have in your pocket. Tested on real daily hardware: Nothing phones, Pixel foldables, and the <a href="https://daylightcomputer.com" target="_blank" rel="noopener">Daylight Computer</a> e-paper tablet.
+        </p>
       </div>
     </section>
 
