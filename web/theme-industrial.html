@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SHEP — Pocket Remote Controller for Agent Swarms</title>
-  <meta name="description" content="Industrial utility remote controller for AI coding swarms. Built for Daylight e-paper tablets, foldables, and pocket devices. Pure precision, zero telemetry.">
+  <title>SHeP — Super Helpful Pocket Remote</title>
+  <meta name="description" content="A lightweight, zero-latency Android remote for herdr agent swarms. Tested on everyday phones like Nothing and Pixel, foldables, and the Daylight Computer.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Braun / Industrial Precision Palette */
       --bg: #141517;
       --surface: #1b1d20;
       --surface-elevated: #22252a;
@@ -20,7 +19,6 @@
       --text-dim: #9aa0aa;
       --text-muted: #676e7b;
       
-      /* Dieter Rams Signal Accents */
       --signal-orange: #ff5500;
       --signal-amber: #e6a100;
       --signal-green: #2ecc71;
@@ -45,7 +43,7 @@
     }
 
     .frame {
-      max-width: 820px;
+      max-width: 840px;
       margin: 0 auto;
       border-left: 1px solid var(--border-dark);
       border-right: 1px solid var(--border-dark);
@@ -53,7 +51,6 @@
       background: var(--bg);
     }
 
-    /* Technical Header & Model Strip */
     .utility-strip {
       display: flex;
       justify-content: space-between;
@@ -67,7 +64,7 @@
       text-transform: uppercase;
     }
 
-    .utility-strip .status-indicator {
+    .status-indicator {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
@@ -131,7 +128,6 @@
       color: var(--text-main);
     }
 
-    /* Hero */
     .hero {
       padding: 3.5rem 0 2.5rem;
     }
@@ -163,7 +159,6 @@
       margin-bottom: 2.75rem;
     }
 
-    /* Quickstart Console Box */
     .console-module {
       background: var(--surface);
       border: 1px solid var(--border-light);
@@ -220,7 +215,323 @@
       border-color: #4b535f;
     }
 
-    /* Technical Spec & Instrument View */
+    /* ========================================================= */
+    /* PURE CSS SMOOTH FORM-FACTOR MORPHING DEMO */
+    /* ========================================================= */
+    .device-showcase-stage {
+      background: #0b0c0e;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      padding: 2.25rem 1rem 2rem;
+      margin-bottom: 3.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stage-label-bar {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid #1a1d22;
+      letter-spacing: 0.06em;
+    }
+
+    /* Device chassis that morphs width and height smoothly */
+    .device-chassis {
+      background: #050607;
+      border: 2px solid #333842;
+      border-radius: 28px;
+      padding: 10px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px #11141a;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      animation: morphDevice 12s infinite ease-in-out;
+      transform-origin: center top;
+      overflow: hidden;
+    }
+
+    /* Camera punch hole */
+    .device-notch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #111418;
+      margin: 2px auto 6px;
+      border: 1px solid #20242b;
+      flex-shrink: 0;
+    }
+
+    /* Screen contents */
+    .device-screen {
+      background: #121316;
+      border-radius: 18px;
+      overflow: hidden;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #20242c;
+      position: relative;
+    }
+
+    /* Top App Bar inside Shep */
+    .app-top-bar {
+      background: #181a1e;
+      border-bottom: 1px solid #282c35;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+
+    .app-top-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .signal-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--signal-green);
+    }
+
+    /* App Workspace: Sidebar + Chat Pane */
+    .app-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sidebar (collapses on phone mode, expands on unfolded/tablet) */
+    .app-sidebar {
+      background: #15171a;
+      border-right: 1px solid #262a32;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: morphSidebar 12s infinite ease-in-out;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      color: var(--text-dim);
+    }
+
+    .sidebar-item.active {
+      background: #21252d;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-size: 0.55rem;
+      padding: 1px 4px;
+      border-radius: 2px;
+      margin-left: auto;
+    }
+    .badge-working { background: rgba(255, 85, 0, 0.18); color: var(--signal-orange); }
+    .badge-idle { background: rgba(154, 160, 170, 0.15); color: var(--text-muted); }
+
+    /* Chat / Remote Pane */
+    .app-chat-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 12px;
+      background: #0e0f11;
+      overflow: hidden;
+    }
+
+    .thread-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1c1f26;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      margin-bottom: 8px;
+    }
+
+    .chat-bubble {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      line-height: 1.4;
+      margin-bottom: 6px;
+      max-width: 90%;
+      font-family: var(--font-ui);
+    }
+
+    .bubble-agent {
+      background: #191c22;
+      border: 1px solid #272c36;
+      color: #cfd5df;
+      align-self: flex-start;
+    }
+
+    .bubble-agent code {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: #7ee787;
+    }
+
+    .bubble-user {
+      background: #252830;
+      color: #fff;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    /* Minimal integrated bottom input bar */
+    .app-input-bar {
+      margin-top: auto;
+      background: #17191d;
+      border: 1px solid #2c313a;
+      border-radius: 6px;
+      padding: 4px 8px 4px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-family: var(--font-ui);
+    }
+
+    .send-pill {
+      background: #ffffff;
+      color: #000;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* Mode indicator label below device */
+    .mode-caption {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+
+    .mode-tab {
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      color: var(--text-muted);
+      transition: all 0.4s ease;
+    }
+
+    /* CSS Keyframes for Seamless Morphing */
+    /* 
+       0% - 30%: Phone mode (folded, compact)
+       35% - 65%: Unfolded dual-screen foldable
+       70% - 100%: Big landscape tablet / Daylight computer
+    */
+    @keyframes morphDevice {
+      0%, 28% {
+        /* Folded Phone (Nothing Phone / Pixel) */
+        width: 250px;
+        height: 380px;
+      }
+      34%, 62% {
+        /* Unfolded Dual-Screen Foldable */
+        width: 440px;
+        height: 390px;
+      }
+      68%, 95% {
+        /* Big Landscape Tablet / Daylight Computer */
+        width: 620px;
+        height: 360px;
+      }
+      100% {
+        width: 250px;
+        height: 380px;
+      }
+    }
+
+    @keyframes morphSidebar {
+      0%, 28% {
+        /* Collapsed in single phone view */
+        width: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        opacity: 0;
+        border-right: none;
+      }
+      34%, 62% {
+        /* Split view on foldables */
+        width: 140px;
+        padding: 8px;
+        opacity: 1;
+        border-right: 1px solid #262a32;
+      }
+      68%, 95% {
+        /* Expanded master sidebar on Daylight tablet */
+        width: 180px;
+        padding: 8px 10px;
+        opacity: 1;
+        border-right: 1px solid #262a32;
+      }
+      100% {
+        width: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        opacity: 0;
+      }
+    }
+
+    /* Indicators sync */
+    .mode-1 { animation: activeMode1 12s infinite; }
+    .mode-2 { animation: activeMode2 12s infinite; }
+    .mode-3 { animation: activeMode3 12s infinite; }
+
+    @keyframes activeMode1 {
+      0%, 28% { color: var(--signal-orange); font-weight: 700; background: rgba(255, 85, 0, 0.1); }
+      34%, 100% { color: var(--text-muted); font-weight: normal; background: transparent; }
+    }
+    @keyframes activeMode2 {
+      0%, 28% { color: var(--text-muted); font-weight: normal; background: transparent; }
+      34%, 62% { color: var(--signal-orange); font-weight: 700; background: rgba(255, 85, 0, 0.1); }
+      68%, 100% { color: var(--text-muted); font-weight: normal; background: transparent; }
+    }
+    @keyframes activeMode3 {
+      0%, 62% { color: var(--text-muted); font-weight: normal; background: transparent; }
+      68%, 95% { color: var(--signal-orange); font-weight: 700; background: rgba(255, 85, 0, 0.1); }
+      100% { color: var(--text-muted); font-weight: normal; background: transparent; }
+    }
+
+    /* Specs Grid */
     .instrument-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -274,7 +585,6 @@
       line-height: 1.55;
     }
 
-    /* Full-width Ecosystem Unit */
     .ecosystem-unit {
       grid-column: 1 / -1;
       border-color: var(--border-light);
@@ -287,35 +597,6 @@
       text-underline-offset: 4px;
     }
 
-    /* Monitor Display */
-    .monitor-screen {
-      background: #0a0b0c;
-      border: 1px solid var(--border-dark);
-      border-radius: 4px;
-      padding: 1.25rem;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      margin-bottom: 3.5rem;
-      line-height: 1.7;
-    }
-
-    .monitor-screen-header {
-      display: flex;
-      justify-content: space-between;
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      border-bottom: 1px solid #1a1d22;
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.75rem;
-      letter-spacing: 0.05em;
-    }
-
-    .agent-tag { color: #58a6ff; font-weight: 600; }
-    .status-working { color: var(--signal-orange); }
-    .status-done { color: var(--signal-green); }
-    .status-user { color: #f0883e; }
-
-    /* Bottom Industrial CTA */
     .cta-strip {
       padding: 2.75rem 0 3.5rem;
       text-align: center;
@@ -392,6 +673,7 @@
       .nav-links { gap: 1rem; }
       footer { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
       .secondary-btn { margin-left: 0; margin-top: 0.75rem; }
+      .device-showcase-stage { display: none; }
     }
   </style>
 </head>
@@ -434,15 +716,78 @@
       </div>
     </section>
 
-    <div class="monitor-screen">
-      <div class="monitor-screen-header">
-        <span>HERDR_BRIDGE // TCP:8765</span>
-        <span>STREAM ACTIVE</span>
+    <!-- PURE CSS ADAPTIVE MORPHING DEMO -->
+    <div class="device-showcase-stage">
+      <div class="stage-label-bar">
+        <span>DYNAMIC FORM-FACTOR ENGINE</span>
+        <span>PURE CSS VIEWPORT MORPH</span>
       </div>
-      <div><span class="agent-tag">[daybreak/codex]</span> <span style="color: #d2a8ff;">EDIT</span> <code>HomeScreen.kt</code></div>
-      <div><span class="agent-tag">[daybreak/codex]</span> <span class="status-done">READY</span> 1 file modified (0 errors)</div>
-      <div><span class="status-user">[operator via shep]</span> Run release suite with dangermaxxing autonomy</div>
-      <div><span class="agent-tag">[daybreak/codex]</span> <span class="status-working">EXEC</span> <code>./gradlew check</code>...</div>
+
+      <div class="device-chassis">
+        <div class="device-notch"></div>
+        <div class="device-screen">
+          <!-- SHeP App Header -->
+          <div class="app-top-bar">
+            <div class="app-top-left">
+              <span class="signal-dot"></span>
+              <span>shep // neo.local</span>
+            </div>
+            <span style="color: var(--text-muted); font-size: 0.6rem;">DANGERMAXXING</span>
+          </div>
+
+          <!-- Body with Morphing Sidebar and Chat Area -->
+          <div class="app-body">
+            <!-- Sidebar (Morphs width via CSS) -->
+            <div class="app-sidebar">
+              <div class="sidebar-item active">
+                <span>daybreak</span>
+                <span class="status-badge badge-working">WORK</span>
+              </div>
+              <div class="sidebar-item">
+                <span>codex-test</span>
+                <span class="status-badge badge-idle">IDLE</span>
+              </div>
+              <div class="sidebar-item">
+                <span>swarm-bridge</span>
+                <span class="status-badge badge-idle">IDLE</span>
+              </div>
+            </div>
+
+            <!-- Chat Pane -->
+            <div class="app-chat-pane">
+              <div class="thread-header">
+                <span style="color: #58a6ff; font-weight: 600;">daybreak // codex</span>
+                <span style="color: var(--text-muted);">tokens: 4,120</span>
+              </div>
+
+              <div class="chat-bubble bubble-agent">
+                Modified <code>HomeScreen.kt</code> with collapsible sidebar.
+              </div>
+
+              <div class="chat-bubble bubble-user">
+                Run check suite
+              </div>
+
+              <div class="chat-bubble bubble-agent">
+                <code>./gradlew check</code> &bull; <span style="color: var(--signal-orange);">WORKING</span>
+              </div>
+
+              <!-- Minimal Integrated Input Bar -->
+              <div class="app-input-bar">
+                <span>Type message to agent...</span>
+                <span class="send-pill">SEND</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode Caption synchronized to the CSS animation loop -->
+      <div class="mode-caption">
+        <span class="mode-tab mode-1">1. FOLDED PHONE (NOTHING / PIXEL)</span>
+        <span class="mode-tab mode-2">2. DUAL-SCREEN UNFOLDED</span>
+        <span class="mode-tab mode-3">3. DAYLIGHT TABLET</span>
+      </div>
     </div>
 
     <section id="specs">
