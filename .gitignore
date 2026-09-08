@@ -19,3 +19,20 @@ __pycache__/
 tmp/
 web/node_modules/
 web/dist/
+
+# AI tool configs
+.mcp.json
+opencode.json
+.claude/
+.codex/
+.cursor/
+.pi/
+.opencode/
+
+# Build artifacts
+web/dev-dist/
+
+# Misc
+audit_screenshots/
+release_artifacts/
+bridge.log
