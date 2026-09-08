@@ -199,6 +199,7 @@ private fun SinglePaneHerdrLayout(
         composable(ROUTE_DASHBOARD) {
             DashboardScreen(
                 onPaneClick = { paneId -> navController.navigate("chat/$paneId") },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(
@@ -212,9 +213,11 @@ private fun SinglePaneHerdrLayout(
                 }
             ),
         ) { backStackEntry ->
+            val paneId = backStackEntry.arguments?.getString("paneId")
             val initialMessage = backStackEntry.arguments?.getString("initialMessage")
             ChatScreen(
                 onNavigateBack = { navController.popBackStack() },
+                paneId = paneId,
                 initialMessage = initialMessage,
                 showBackButton = true,
             )
