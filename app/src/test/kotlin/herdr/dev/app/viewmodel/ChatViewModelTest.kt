@@ -46,6 +46,9 @@ class ChatViewModelTest {
 
     @After
     fun tearDown() {
+        if (::viewModel.isInitialized) {
+            viewModel.onCleared()
+        }
         Dispatchers.resetMain()
     }
 
@@ -58,7 +61,7 @@ class ChatViewModelTest {
         whenever(repository.readPaneOutput("pane1")).thenReturn(messageFlow)
 
         // When
-        viewModel = ChatViewModel(repository, savedStateHandle)
+        viewModel = ChatViewModel(repository, savedStateHandle, pollingIntervalMillis = 0L)
         testScheduler.advanceTimeBy(100)
 
         // Then
@@ -74,7 +77,7 @@ class ChatViewModelTest {
         whenever(repository.readPaneOutput("pane1")).thenReturn(messageFlow)
 
         // When
-        viewModel = ChatViewModel(repository, savedStateHandle)
+        viewModel = ChatViewModel(repository, savedStateHandle, pollingIntervalMillis = 0L)
 
         // Then
         assert(viewModel.uiState.value.paneId == "pane1")
@@ -87,7 +90,7 @@ class ChatViewModelTest {
         val messageFlow = MutableSharedFlow<ChatMessage>()
         
         whenever(repository.readPaneOutput("pane1")).thenReturn(messageFlow)
-        viewModel = ChatViewModel(repository, savedStateHandle)
+        viewModel = ChatViewModel(repository, savedStateHandle, pollingIntervalMillis = 0L)
 
         // When
         viewModel.onDraftChanged("Test message")
@@ -103,7 +106,7 @@ class ChatViewModelTest {
         val messageFlow = MutableSharedFlow<ChatMessage>()
         
         whenever(repository.readPaneOutput("pane1")).thenReturn(messageFlow)
-        viewModel = ChatViewModel(repository, savedStateHandle)
+        viewModel = ChatViewModel(repository, savedStateHandle, pollingIntervalMillis = 0L)
         viewModel.onDraftChanged("Test message")
 
         // When
@@ -122,7 +125,7 @@ class ChatViewModelTest {
         val messageFlow = MutableSharedFlow<ChatMessage>()
 
         whenever(repository.readPaneOutput("pane1")).thenReturn(messageFlow)
-        viewModel = ChatViewModel(repository, savedStateHandle)
+        viewModel = ChatViewModel(repository, savedStateHandle, pollingIntervalMillis = 0L)
         viewModel.onDraftChanged("   ")
 
         // When

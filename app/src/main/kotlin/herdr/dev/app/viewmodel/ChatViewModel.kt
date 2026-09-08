@@ -35,6 +35,17 @@ class ChatViewModel @Inject constructor(
     private val repository: HerdrSocketRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+    private var pollingIntervalMillis: Long = 2000L
+
+    constructor(
+        repository: HerdrSocketRepository,
+        savedStateHandle: SavedStateHandle,
+        pollingIntervalMillis: Long,
+    ) : this(repository, savedStateHandle) {
+        this.pollingIntervalMillis = pollingIntervalMillis
+        startObservingPane(activePaneId)
+    }
+
     private var activePaneId: String = savedStateHandle.get<String>("paneId") ?: ""
     private val _uiState = MutableStateFlow(ChatUiState(paneId = activePaneId))
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
@@ -129,10 +140,12 @@ class ChatViewModel @Inject constructor(
             }
         }
 
-        fetchOutputJob = viewModelScope.launch {
-            while (isActive) {
-                fetchLatestTerminalOutput()
-                delay(2000)
+        if (pollingIntervalMillis > 0) {
+            fetchOutputJob = viewModelScope.launch {
+                while (isActive) {
+                    fetchLatestTerminalOutput()
+                    delay(pollingIntervalMillis)
+                }
             }
         }
     }
@@ -269,5 +282,11 @@ class ChatViewModel @Inject constructor(
             delay(300)
             fetchLatestTerminalOutput()
         }
+    }
+
+    public override fun onCleared() {
+        super.onCleared()
+        observeJob?.cancel()
+        fetchOutputJob?.cancel()
     }
 }

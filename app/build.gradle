@@ -51,7 +51,7 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
         unitTests.all {
-            maxHeapSize = "1024m"
+            maxHeapSize = "2048m"
         }
     }
 
