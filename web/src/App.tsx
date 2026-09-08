@@ -711,131 +711,6 @@ export function App() {
           background: 'var(--bg-surface)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
-            {/* Claude Desktop Subtle Timeline Stripes / Beats Scrubber in top corner */}
-            {messages.length > 0 && (
-              <div 
-                style={{ 
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: '28px',
-                  padding: '4px 6px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  background: showHistoryMenu ? 'var(--bg-surface-high)' : 'transparent',
-                  transition: 'background 0.15s ease'
-                }}
-                onMouseEnter={() => setShowHistoryMenu(true)}
-                onMouseLeave={() => setShowHistoryMenu(false)}
-              >
-                {/* The subtle timeline stripes (horizontal line of vertical tick stripes) */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '3px',
-                  padding: '2px 4px'
-                }}>
-                  {messages.slice(-12).map((m, i, arr) => {
-                    const isLatest = i === arr.length - 1;
-                    const isUser = m.sender === 'user';
-                    return (
-                      <div
-                        key={m.id || i}
-                        style={{
-                          width: '2px',
-                          height: isLatest ? '14px' : isUser ? '10px' : '7px',
-                          borderRadius: '1px',
-                          backgroundColor: isLatest 
-                            ? 'var(--cds-clay)' 
-                            : isUser 
-                              ? 'var(--text-secondary)' 
-                              : 'rgba(120, 120, 120, 0.35)',
-                          transition: 'all 0.15s ease'
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-
-                {/* Hover Tooltip / Beats Timeline Popover */}
-                {showHistoryMenu && (
-                  <div 
-                    style={{
-                      position: 'absolute',
-                      top: '32px',
-                      left: '0',
-                      width: '320px',
-                      maxHeight: '380px',
-                      background: 'var(--bg-surface)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: '10px',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.16)',
-                      zIndex: 100,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      overflow: 'hidden'
-                    }}
-                    onMouseEnter={() => setShowHistoryMenu(true)}
-                    onMouseLeave={() => setShowHistoryMenu(false)}
-                  >
-                    <div style={{
-                      padding: '8px 12px',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      background: 'var(--bg-surface-high)',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      letterSpacing: '0.04em',
-                      color: 'var(--text-secondary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}>
-                      <span>CONVERSATION BEATS</span>
-                      <span>{messages.length} TURNS</span>
-                    </div>
-
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
-                      {messages.map((m, idx) => (
-                        <div
-                          key={m.id}
-                          onClick={() => jumpToTurn(idx)}
-                          style={{
-                            padding: '7px 10px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            marginBottom: '2px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '2px',
-                            transition: 'background 0.12s ease'
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-high)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--text-secondary)' }}>
-                            <span style={{ fontWeight: 600, color: m.sender === 'user' ? 'var(--text-primary)' : 'var(--cds-clay)' }}>
-                              {m.sender === 'user' ? 'You' : (selectedPane?.modelShortname || 'Assistant')}
-                            </span>
-                            <span>Turn #{idx + 1}</span>
-                          </div>
-                          <div style={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            color: 'var(--text-primary)',
-                            fontSize: '11.5px'
-                          }}>
-                            {m.text.slice(0, 70) || (m.tools ? `[${m.tools.length} actions]` : '…')}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             <div>
               <div style={{ fontWeight: 700, fontSize: '15px' }}>{selectedPane?.title}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
@@ -1004,6 +879,150 @@ export function App() {
                 )}
               </div>
             )}
+
+            {/* Conversation Beats Timeline: Inside the conversation thread content itself */}
+            {messages.length > 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: '14px',
+                marginBottom: '20px',
+                borderBottom: '1px solid var(--border-subtle)',
+                position: 'relative'
+              }}>
+                <div 
+                  style={{ 
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    background: showHistoryMenu ? 'var(--bg-surface-high)' : 'transparent',
+                    transition: 'background 0.15s ease'
+                  }}
+                  onMouseEnter={() => setShowHistoryMenu(true)}
+                  onMouseLeave={() => setShowHistoryMenu(false)}
+                >
+                  {/* The subtle timeline stripes (horizontal line of vertical tick stripes) */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '3px',
+                    padding: '2px 0'
+                  }}>
+                    {messages.map((m, i, arr) => {
+                      const isLatest = i === arr.length - 1;
+                      const isUser = m.sender === 'user';
+                      return (
+                        <div
+                          key={m.id || i}
+                          style={{
+                            width: '2.5px',
+                            height: isLatest ? '14px' : isUser ? '10px' : '7px',
+                            borderRadius: '1px',
+                            backgroundColor: isLatest 
+                              ? 'var(--cds-clay)' 
+                              : isUser 
+                                ? 'var(--text-secondary)' 
+                                : 'rgba(120, 120, 120, 0.35)',
+                            transition: 'all 0.15s ease'
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.02em' }}>
+                    {messages.length} {messages.length === 1 ? 'turn' : 'turns'}
+                  </span>
+
+                  {/* Hover Tooltip / Beats Timeline Popover */}
+                  {showHistoryMenu && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: '28px',
+                        left: '0',
+                        width: '320px',
+                        maxHeight: '380px',
+                        background: 'var(--bg-surface)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '10px',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                        zIndex: 100,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden'
+                      }}
+                      onMouseEnter={() => setShowHistoryMenu(true)}
+                      onMouseLeave={() => setShowHistoryMenu(false)}
+                    >
+                      <div style={{
+                        padding: '8px 12px',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        background: 'var(--bg-surface-high)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        letterSpacing: '0.04em',
+                        color: 'var(--text-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}>
+                        <span>CONVERSATION BEATS</span>
+                        <span>{messages.length} TURNS</span>
+                      </div>
+
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
+                        {messages.map((m, idx) => (
+                          <div
+                            key={m.id}
+                            onClick={() => jumpToTurn(idx)}
+                            style={{
+                              padding: '7px 10px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              marginBottom: '2px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '2px',
+                              transition: 'background 0.12s ease'
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-high)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--text-secondary)' }}>
+                              <span style={{ fontWeight: 600, color: m.sender === 'user' ? 'var(--text-primary)' : 'var(--cds-clay)' }}>
+                                {m.sender === 'user' ? 'You' : (selectedPane?.modelShortname || 'Assistant')}
+                              </span>
+                              <span>Turn #{idx + 1}</span>
+                            </div>
+                            <div style={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              color: 'var(--text-primary)',
+                              fontSize: '11.5px'
+                            }}>
+                              {m.text.slice(0, 70) || (m.tools ? `[${m.tools.length} actions]` : '…')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                  Jump: <kbd style={{ padding: '1px 4px', borderRadius: '3px', background: 'var(--bg-surface-high)', fontSize: '10px' }}>⌥↑</kbd> <kbd style={{ padding: '1px 4px', borderRadius: '3px', background: 'var(--bg-surface-high)', fontSize: '10px' }}>⌥↓</kbd>
+                </div>
+              </div>
+            )}
+
             {messages.map((msg, idx) => (
               <div id={`msg-turn-${idx}`} key={msg.id} style={{ marginBottom: '32px', scrollMarginTop: '20px' }}>
                 {msg.sender === 'user' ? (
