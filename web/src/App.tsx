@@ -51,8 +51,33 @@ interface TaskItem {
 }
 
 export function App() {
-  const host = window.location.hostname || 'localhost';
-  const port = '8765';
+  // Support URL params (?h=...&p=... or #h=... or ?host=... or tailscale MagicDNS) with localStorage memory
+  const urlParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  
+  const initialHost = urlParams.get('host') || urlParams.get('h') 
+    || hashParams.get('host') || hashParams.get('h')
+    || localStorage.getItem('shep_server_host')
+    || window.location.hostname 
+    || 'localhost';
+
+  const initialPort = urlParams.get('port') || urlParams.get('p')
+    || hashParams.get('port') || hashParams.get('p')
+    || localStorage.getItem('shep_server_port')
+    || '8765';
+
+  const host = initialHost;
+  const port = initialPort;
+
+  // Save successful pairing host to localStorage
+  useEffect(() => {
+    if (host && host !== 'localhost') {
+      localStorage.setItem('shep_server_host', host);
+    }
+    if (port) {
+      localStorage.setItem('shep_server_port', port);
+    }
+  }, [host, port]);
   const [connected, setConnected] = useState(false);
   const [panes, setPanes] = useState<Pane[]>([]);
   const [selectedPaneId, setSelectedPaneId] = useState<string>('');
