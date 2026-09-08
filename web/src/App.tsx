@@ -1495,7 +1495,7 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
   const webPairUrl = `${origin}/?h=${encodeURIComponent(inputHost)}&p=${encodeURIComponent(inputPort)}`;
   const androidDeepLink = `shep://pair?host=${encodeURIComponent(inputHost)}&port=${encodeURIComponent(inputPort)}`;
   const bridgeCmd = `python3 bridge/herdr-bridge.py`;
-  const installCmd = `curl -fsSL https://shep.work/sheperd.sh | bash`;
+  const installCmd = `curl -fsSL https://sheperd.sh | sh`;
 
   const copyToClipboard = (text: string, type: 'link' | 'cmd' | 'install') => {
     navigator.clipboard.writeText(text);
@@ -1858,7 +1858,7 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
                 </div>
                 <ol style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-secondary)', fontSize: '12.5px', lineHeight: '1.6' }}>
                   <li>SSH into your cloud server or VM.</li>
-                  <li>Run the 1-liner installer: <code>curl -fsSL https://shep.work/sheperd.sh | bash</code> (auto-installs herdr and bridge).</li>
+                  <li>Run the 1-liner installer: <code>curl -fsSL https://sheperd.sh | sh</code> (auto-installs herdr and bridge).</li>
                   <li>Copy the 1-click pairing URL output by the bridge (e.g. <code>https://shep.work/?h=your-cloud-ip&p=8765</code>).</li>
                   <li>Paste your cloud host / DNS into the Quick Connect tab, or open the link directly!</li>
                 </ol>
