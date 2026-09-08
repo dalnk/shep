@@ -8,7 +8,14 @@ import {
   Wifi, 
   WifiOff, 
   Terminal,
-  ArrowDown 
+  ArrowDown,
+  PanelRightClose,
+  PanelRightOpen,
+  CheckCircle2,
+  ExternalLink,
+  RefreshCw,
+  Copy,
+  Check
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -33,6 +40,15 @@ interface Message {
   timestamp: number;
 }
 
+interface TaskItem {
+  id: string;
+  title: string;
+  category: 'command' | 'subagent' | 'task' | 'timer' | 'tool';
+  status: 'running' | 'done' | 'failed';
+  timestamp: number;
+  output?: string;
+}
+
 export function App() {
   const host = window.location.hostname || 'localhost';
   const port = '8765';
@@ -44,6 +60,15 @@ export function App() {
   const [input, setInput] = useState('');
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+
+  // Claude Desktop Secondary Pane state
+  const [showAuxPane, setShowAuxPane] = useState<boolean>(true);
+  const [auxTab, setAuxTab] = useState<'tasks' | 'terminal' | 'preview'>('tasks');
+  const [terminalOutput, setTerminalOutput] = useState<string>('');
+  const [terminalLoading, setTerminalLoading] = useState<boolean>(false);
+  const [terminalPaneId, setTerminalPaneId] = useState<string>('');
+  const [copiedTerminal, setCopiedTerminal] = useState<boolean>(false);
+
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const isAutoScrollRef = useRef(true);
@@ -58,7 +83,6 @@ export function App() {
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget;
     const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    // If user is within 100px of bottom, stick to bottom
     const atBottom = distanceToBottom < 100;
     isAutoScrollRef.current = atBottom;
     setShowScrollBottom(distanceToBottom > 160);
@@ -143,6 +167,13 @@ export function App() {
             }
           }
 
+          // Handle pane.read response (terminal view)
+          if (data.id?.startsWith('read-term-')) {
+            setTerminalLoading(false);
+            const text = data.result?.read?.text || data.result?.text || '';
+            setTerminalOutput(text || '(no recent terminal output)');
+          }
+
           // Handle pane.transcript response
           if (data.result && data.result.turns !== undefined) {
             const res = data.result;
@@ -186,7 +217,7 @@ export function App() {
     };
   }, [host, port]);
 
-  // When selected pane changes, fetch its structured transcript
+  // When selected pane changes, fetch its structured transcript and terminal buffer
   useEffect(() => {
     if (ws && connected && selectedPaneId) {
       ws.send(JSON.stringify({
@@ -194,8 +225,21 @@ export function App() {
         id: `transcript-${selectedPaneId}`,
         params: { pane_id: selectedPaneId }
       }));
+      fetchTerminal(selectedPaneId);
     }
   }, [ws, connected, selectedPaneId]);
+
+  const fetchTerminal = (targetPaneId?: string) => {
+    const pid = targetPaneId || selectedPaneId;
+    if (!ws || !connected || !pid) return;
+    setTerminalLoading(true);
+    setTerminalPaneId(pid);
+    ws.send(JSON.stringify({
+      method: 'pane.read',
+      id: `read-term-${pid}-${Date.now()}`,
+      params: { pane_id: pid, source: 'recent', lines: 80 }
+    }));
+  };
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -225,16 +269,78 @@ export function App() {
     }
   };
 
-  const selectedPane = panes.find(p => p.id === selectedPaneId) || panes[0];
+  const copyTerminalOutput = () => {
+    if (!terminalOutput) return;
+    navigator.clipboard.writeText(terminalOutput);
+    setCopiedTerminal(true);
+    setTimeout(() => setCopiedTerminal(false), 2000);
+  };
 
+  const openToolInTerminal = (toolText: string) => {
+    setShowAuxPane(true);
+    setAuxTab('terminal');
+    // If it mentions a background task or subagent, see if we have a matching background pane
+    const matchPane = panes.find(p => p.isBackground && toolText.toLowerCase().includes(p.id.toLowerCase()));
+    if (matchPane) {
+      fetchTerminal(matchPane.id);
+    } else {
+      fetchTerminal(selectedPaneId);
+    }
+  };
+
+  const selectedPane = panes.find(p => p.id === selectedPaneId) || panes[0];
   const mainPanes = panes.filter(p => !p.isBackground);
   const bgPanes = panes.filter(p => p.isBackground);
 
+  // Extract all background tasks and completed tool actions for the Claude Tasks Pane
+  const collectedTasks = React.useMemo<TaskItem[]>(() => {
+    const list: TaskItem[] = [];
+    
+    // First include live background panes/tasks
+    bgPanes.forEach(bp => {
+      list.push({
+        id: `pane-${bp.id}`,
+        title: bp.title,
+        category: bp.title.toLowerCase().includes('subagent') ? 'subagent' : 'task',
+        status: bp.state === 'WORKING' ? 'running' : bp.state === 'BLOCKED' ? 'failed' : 'done',
+        timestamp: Date.now()
+      });
+    });
+
+    // Then extract tools from messages
+    messages.forEach((m, msgIdx) => {
+      if (m.tools) {
+        m.tools.forEach((t, tIdx) => {
+          const tl = t.toLowerCase();
+          const category: TaskItem['category'] = 
+            tl.includes('subagent') || tl.includes('spawn') ? 'subagent' :
+            tl.includes('task') ? 'task' :
+            tl.includes('schedule') || tl.includes('timer') ? 'timer' :
+            tl.includes('run') || tl.includes('command') ? 'command' : 'tool';
+          
+          const isLastMessage = msgIdx === messages.length - 1;
+          const isRunning = isLastMessage && selectedPane?.state === 'WORKING' && tIdx === m.tools!.length - 1;
+
+          list.push({
+            id: `tool-${msgIdx}-${tIdx}`,
+            title: t,
+            category,
+            status: isRunning ? 'running' : 'done',
+            timestamp: m.timestamp
+          });
+        });
+      }
+    });
+
+    return list.reverse(); // newest first
+  }, [bgPanes, messages, selectedPane]);
+
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', background: 'var(--bg-page)' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', background: 'var(--bg-page)', overflow: 'hidden' }}>
       {/* Sidebar: Agents & Workspaces */}
       <div style={{
-        width: '320px',
+        width: '300px',
+        minWidth: '280px',
         borderRight: '1px solid var(--border-subtle)',
         background: 'var(--bg-surface)',
         display: 'flex',
@@ -249,7 +355,7 @@ export function App() {
           borderBottom: '1px solid var(--border-subtle)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontWeight: 800, fontSize: '17px', letterSpacing: '-0.02em' }}>Shepard</span>
+            <span style={{ fontWeight: 800, fontSize: '17px', letterSpacing: '-0.02em' }}>Shep</span>
             <span style={{ 
               fontSize: '11px', 
               padding: '2px 6px', 
@@ -257,7 +363,7 @@ export function App() {
               background: 'var(--bg-surface-high)',
               color: 'var(--text-secondary)',
               fontWeight: 500
-            }}>WebUX</span>
+            }}>Desktop</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
             {connected ? (
@@ -336,14 +442,17 @@ export function App() {
           {bgPanes.length > 0 && (
             <>
               <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--text-secondary)', marginTop: '20px', marginBottom: '8px', paddingLeft: '8px' }}>
-                BACKGROUND TASKS ({bgPanes.length})
+                BACKGROUND WORKTREES ({bgPanes.length})
               </div>
               {bgPanes.map(pane => {
                 const isSelected = pane.id === selectedPaneId;
                 return (
                   <div
                     key={pane.id}
-                    onClick={() => setSelectedPaneId(pane.id)}
+                    onClick={() => {
+                      setSelectedPaneId(pane.id);
+                      fetchTerminal(pane.id);
+                    }}
                     style={{
                       padding: '8px 12px',
                       borderRadius: '8px',
@@ -357,9 +466,9 @@ export function App() {
                       opacity: 0.85
                     }}
                   >
-                    <Terminal size={16} color="var(--text-secondary)" />
+                    <Terminal size={15} color="var(--text-secondary)" />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '12.5px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {pane.title}
                       </div>
                       <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>
@@ -377,22 +486,25 @@ export function App() {
         </div>
       </div>
 
-      {/* Main Canvas: Claude-like Chat Flow */}
+      {/* Main Center Canvas: Claude Chat Stream */}
       <div style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         minWidth: 0,
-        background: 'var(--bg-page)'
+        background: 'var(--bg-page)',
+        borderRight: showAuxPane ? '1px solid var(--border-subtle)' : 'none',
+        position: 'relative'
       }}>
-        {/* Agent Header */}
+        {/* Agent Header with Claude-style Split Pane Toggle */}
         <div style={{
-          padding: '16px 24px',
+          padding: '14px 24px',
           borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          background: 'var(--bg-surface)'
         }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: '15px' }}>{selectedPane?.title}</div>
@@ -400,22 +512,46 @@ export function App() {
               Connected to {selectedPane?.agentName || 'agent'} {selectedPane?.modelShortname ? `(${selectedPane.modelShortname})` : ''} via herdr
             </div>
           </div>
-          {selectedPane?.activeAction && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '12px',
-              padding: '4px 10px',
-              borderRadius: '20px',
-              background: 'var(--bg-surface-high)',
-              color: 'var(--cds-clay)',
-              fontWeight: 500
-            }}>
-              <span className="cds-spinner" style={{ width: '10px', height: '10px', border: '2px solid var(--cds-clay)', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
-              <span>{selectedPane.activeAction}</span>
-            </div>
-          )}
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {selectedPane?.activeAction && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                background: 'var(--bg-surface-high)',
+                color: 'var(--cds-clay)',
+                fontWeight: 500
+              }}>
+                <span className="cds-spinner" style={{ width: '10px', height: '10px', border: '2px solid var(--cds-clay)', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
+                <span>{selectedPane.activeAction}</span>
+              </div>
+            )}
+
+            {/* Split View Toggle Button */}
+            <button
+              onClick={() => setShowAuxPane(!showAuxPane)}
+              title={showAuxPane ? 'Hide side panel' : 'Show tasks & terminal panel'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-subtle)',
+                background: showAuxPane ? 'var(--bg-surface-high)' : 'transparent',
+                color: 'var(--text-secondary)',
+                fontSize: '12px',
+                fontWeight: 500
+              }}
+            >
+              {showAuxPane ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
+              <span>{showAuxPane ? 'Hide Pane' : 'Show Pane'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Message Canvas */}
@@ -425,14 +561,14 @@ export function App() {
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '32px 0',
+            padding: '28px 0',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             position: 'relative'
           }}
         >
-          <div style={{ width: '100%', maxWidth: '740px', padding: '0 24px' }}>
+          <div style={{ width: '100%', maxWidth: '720px', padding: '0 24px' }}>
             {messages.length === 0 && (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '80px', fontSize: '14px' }}>
                 <Sparkles size={24} color="var(--cds-clay)" style={{ margin: '0 auto 12px auto' }} />
@@ -469,9 +605,12 @@ export function App() {
                       <ThoughtPill text={msg.thinking} />
                     )}
 
-                    {/* Tool Summary Pill (Claude Style) */}
+                    {/* Tool Summary Pill with Click to Open Terminal/Tasks */}
                     {msg.tools && msg.tools.length > 0 && (
-                      <ToolSummaryPill tools={msg.tools} />
+                      <ToolSummaryPill 
+                        tools={msg.tools} 
+                        onInspectTool={openToolInTerminal}
+                      />
                     )}
 
                     {/* Clean response text directly on canvas */}
@@ -487,14 +626,14 @@ export function App() {
             <div ref={messagesEndRef} style={{ height: '1px' }} />
           </div>
 
-          {/* Floating Scroll-to-Bottom Button (Claude style) */}
+          {/* Floating Scroll-to-Bottom Button */}
           {showScrollBottom && (
             <button
               onClick={scrollToBottom}
               style={{
                 position: 'fixed',
                 bottom: '88px',
-                right: 'calc(50% - 20px)',
+                right: showAuxPane ? 'calc(50% + 190px)' : 'calc(50% - 20px)',
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
@@ -507,7 +646,7 @@ export function App() {
                 cursor: 'pointer',
                 color: 'var(--text-secondary)',
                 zIndex: 10,
-                transition: 'transform 0.15s ease'
+                transition: 'all 0.15s ease'
               }}
               title="Scroll to bottom"
             >
@@ -517,10 +656,10 @@ export function App() {
         </div>
 
         {/* Composer: Claude-style Pill Input */}
-        <div style={{ padding: '0 24px 24px 24px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '0 24px 20px 24px', display: 'flex', justifyContent: 'center' }}>
           <div style={{
             width: '100%',
-            maxWidth: '740px',
+            maxWidth: '720px',
             border: '1px solid var(--border-subtle)',
             borderRadius: '24px',
             background: 'var(--bg-surface)',
@@ -565,6 +704,249 @@ export function App() {
           </div>
         </div>
       </div>
+
+      {/* Claude Desktop Secondary Split Pane (Terminals / Tasks / Artifacts) */}
+      {showAuxPane && (
+        <div style={{
+          width: '380px',
+          minWidth: '340px',
+          maxWidth: '460px',
+          background: 'var(--bg-surface)',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          overflow: 'hidden'
+        }}>
+          {/* Pane Header with Tabs */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '10px 16px',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'var(--bg-surface-high)'
+          }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button
+                onClick={() => setAuxTab('tasks')}
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  background: auxTab === 'tasks' ? 'var(--bg-surface)' : 'transparent',
+                  color: auxTab === 'tasks' ? 'var(--cds-clay)' : 'var(--text-secondary)',
+                  border: auxTab === 'tasks' ? '1px solid var(--border-subtle)' : '1px solid transparent'
+                }}
+              >
+                Tasks ({collectedTasks.length})
+              </button>
+              <button
+                onClick={() => {
+                  setAuxTab('terminal');
+                  fetchTerminal();
+                }}
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  background: auxTab === 'terminal' ? 'var(--bg-surface)' : 'transparent',
+                  color: auxTab === 'terminal' ? 'var(--cds-clay)' : 'var(--text-secondary)',
+                  border: auxTab === 'terminal' ? '1px solid var(--border-subtle)' : '1px solid transparent'
+                }}
+              >
+                Terminal
+              </button>
+              <button
+                onClick={() => setAuxTab('preview')}
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  background: auxTab === 'preview' ? 'var(--bg-surface)' : 'transparent',
+                  color: auxTab === 'preview' ? 'var(--cds-clay)' : 'var(--text-secondary)',
+                  border: auxTab === 'preview' ? '1px solid var(--border-subtle)' : '1px solid transparent'
+                }}
+              >
+                Inspector
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {auxTab === 'terminal' && (
+                <>
+                  <button
+                    onClick={() => fetchTerminal(terminalPaneId || selectedPaneId)}
+                    title="Refresh terminal"
+                    style={{
+                      padding: '4px',
+                      borderRadius: '4px',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <RefreshCw size={13} className={terminalLoading ? 'cds-spinner' : ''} />
+                  </button>
+                  <button
+                    onClick={copyTerminalOutput}
+                    title="Copy terminal output"
+                    style={{
+                      padding: '4px',
+                      borderRadius: '4px',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {copiedTerminal ? <Check size={13} color="var(--cds-clay)" /> : <Copy size={13} />}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Tab 1: Tasks (Claude Desktop Style Background & Finished Tasks) */}
+          {auxTab === 'tasks' && (
+            <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                BACKGROUND & COMPLETED TASKS
+              </div>
+
+              {collectedTasks.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                  No tasks spawned yet in this conversation.
+                </div>
+              ) : (
+                collectedTasks.map(task => (
+                  <div
+                    key={task.id}
+                    onClick={() => openToolInTerminal(task.title)}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      background: 'var(--bg-surface-high)',
+                      border: '1px solid var(--border-subtle)',
+                      marginBottom: '8px',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        color: task.category === 'subagent' ? 'var(--cds-clay)' : 'var(--text-secondary)'
+                      }}>
+                        {task.category}
+                      </span>
+
+                      {task.status === 'running' ? (
+                        <span style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: 'var(--cds-clay)'
+                        }}>
+                          <span className="cds-spinner" style={{ width: '8px', height: '8px', border: '1.5px solid var(--cds-clay)', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} />
+                          running
+                        </span>
+                      ) : (
+                        <span style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11px',
+                          fontWeight: 500,
+                          color: '#22c55e'
+                        }}>
+                          <CheckCircle2 size={12} />
+                          finished
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{
+                      fontSize: '12.5px',
+                      fontFamily: 'var(--cds-font-mono)',
+                      lineHeight: '1.4',
+                      color: 'var(--text-primary)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {task.title}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Tab 2: Terminal / Stdout Stream */}
+          {auxTab === 'terminal' && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{
+                padding: '6px 14px',
+                fontSize: '11px',
+                color: 'var(--text-secondary)',
+                borderBottom: '1px solid var(--border-subtle)',
+                background: 'var(--bg-surface)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span>Output buffer: {terminalPaneId || selectedPaneId}</span>
+                {terminalLoading && <span style={{ color: 'var(--cds-clay)' }}>streaming…</span>}
+              </div>
+              <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '12px 14px',
+                fontFamily: 'var(--cds-font-mono)',
+                fontSize: '11.5px',
+                lineHeight: '1.6',
+                background: '#121212',
+                color: '#e4e4e7',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all'
+              }}>
+                {terminalOutput || '(no terminal output recorded)'}
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Artifacts / Inspector */}
+          {auxTab === 'preview' && (
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                SESSION DETAILS & ARTIFACTS
+              </div>
+              <div style={{
+                background: 'var(--bg-surface-high)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '8px',
+                padding: '12px',
+                fontSize: '12px',
+                lineHeight: '1.6'
+              }}>
+                <div><strong>Current Pane:</strong> {selectedPane?.id}</div>
+                <div><strong>Agent:</strong> {selectedPane?.agentName}</div>
+                <div><strong>Model:</strong> {selectedPane?.modelShortname || 'Default'}</div>
+                <div><strong>Status:</strong> {selectedPane?.state}</div>
+                <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+                  <div><strong>Total Messages:</strong> {messages.length}</div>
+                  <div><strong>Daemon Host:</strong> {host}:{port}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -604,7 +986,13 @@ function ThoughtPill({ text }: { text: string }) {
   );
 }
 
-function ToolSummaryPill({ tools }: { tools: string[] }) {
+function ToolSummaryPill({ 
+  tools, 
+  onInspectTool 
+}: { 
+  tools: string[]; 
+  onInspectTool: (tool: string) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
 
   // Group tools into Claude Desktop phrasing
@@ -661,15 +1049,29 @@ function ToolSummaryPill({ tools }: { tools: string[] }) {
             const tl = t.toLowerCase();
             const isBg = tl.includes('spawn') || tl.includes('task') || tl.includes('subagent');
             return (
-              <div key={i} style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                padding: '2px 0',
-                color: isBg ? 'var(--cds-clay)' : 'var(--text-primary)'
-              }}>
-                <span style={{ color: 'var(--text-secondary)' }}>•</span>
-                <span>{t}</span>
+              <div 
+                key={i} 
+                onClick={() => onInspectTool(t)}
+                title="Click to inspect in terminal pane"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  gap: '8px',
+                  padding: '3px 6px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  color: isBg ? 'var(--cds-clay)' : 'var(--text-primary)',
+                  transition: 'background 0.15s ease'
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(120,120,120,0.1)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, overflow: 'hidden' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>•</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t}</span>
+                </div>
+                <ExternalLink size={12} color="var(--text-secondary)" style={{ flexShrink: 0 }} />
               </div>
             );
           })}
