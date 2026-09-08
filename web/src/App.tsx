@@ -15,7 +15,8 @@ import {
   ExternalLink,
   RefreshCw,
   Copy,
-  Check
+  Check,
+  X
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -61,8 +62,8 @@ export function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
 
-  // Claude Desktop Secondary Pane state
-  const [showAuxPane, setShowAuxPane] = useState<boolean>(true);
+  // Claude Desktop Secondary Pane state (starts collapsed, opens on clicking task/terminal/tool)
+  const [showAuxPane, setShowAuxPane] = useState<boolean>(false);
   const [auxTab, setAuxTab] = useState<'tasks' | 'terminal' | 'preview'>('tasks');
   const [terminalOutput, setTerminalOutput] = useState<string>('');
   const [terminalLoading, setTerminalLoading] = useState<boolean>(false);
@@ -531,25 +532,38 @@ export function App() {
               </div>
             )}
 
-            {/* Split View Toggle Button */}
+            {/* Claude Desktop Split View Toggle Button */}
             <button
               onClick={() => setShowAuxPane(!showAuxPane)}
-              title={showAuxPane ? 'Hide side panel' : 'Show tasks & terminal panel'}
+              title={showAuxPane ? 'Close panel' : 'Open tasks & terminal panel'}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
                 padding: '6px 10px',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 border: '1px solid var(--border-subtle)',
                 background: showAuxPane ? 'var(--bg-surface-high)' : 'transparent',
-                color: 'var(--text-secondary)',
+                color: showAuxPane ? 'var(--cds-clay)' : 'var(--text-secondary)',
                 fontSize: '12px',
-                fontWeight: 500
+                fontWeight: 500,
+                transition: 'all 0.15s ease'
               }}
             >
               {showAuxPane ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
-              <span>{showAuxPane ? 'Hide Pane' : 'Show Pane'}</span>
+              <span>{showAuxPane ? 'Close' : 'Tasks'}</span>
+              {collectedTasks.length > 0 && !showAuxPane && (
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  background: 'var(--cds-clay)',
+                  color: '#fff',
+                  padding: '1px 5px',
+                  borderRadius: '10px'
+                }}>
+                  {collectedTasks.length}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -774,7 +788,7 @@ export function App() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               {auxTab === 'terminal' && (
                 <>
                   <button
@@ -803,6 +817,26 @@ export function App() {
                   </button>
                 </>
               )}
+
+              {/* Claude Desktop 'X' Close Button */}
+              <button
+                onClick={() => setShowAuxPane(false)}
+                title="Close side panel"
+                style={{
+                  padding: '4px',
+                  borderRadius: '6px',
+                  color: 'var(--text-secondary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              >
+                <X size={15} />
+              </button>
             </div>
           </div>
 
