@@ -20,6 +20,8 @@ private val IROH_NODE_ID_KEY = stringPreferencesKey("iroh_node_id")
 private val CONNECTION_TYPE_KEY = stringPreferencesKey("connection_type")
 private val DANGER_LEVEL_KEY = stringPreferencesKey("danger_level")
 private val ONBOARDING_COMPLETED_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("onboarding_completed")
+private val ACCENT_COLOR_INDEX_KEY = androidx.datastore.preferences.core.intPreferencesKey("accent_color_index")
+private val LIVE_UPDATES_RENDER_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("live_updates_render")
 
 enum class ConnectionType {
     LOCAL, IROH
@@ -35,6 +37,13 @@ enum class DangerLevel(val displayName: String, val description: String) {
 class SettingsRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    val accentColorIndex: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[ACCENT_COLOR_INDEX_KEY] ?: 0
+    }
+
+    val liveUpdatesRender: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[LIVE_UPDATES_RENDER_KEY] ?: true
+    }
     val dangerLevel: Flow<DangerLevel> = context.dataStore.data.map { preferences ->
         try {
             DangerLevel.valueOf(preferences[DANGER_LEVEL_KEY] ?: DangerLevel.NORMAL.name)
@@ -95,6 +104,18 @@ class SettingsRepository @Inject constructor(
     suspend fun setDangerLevel(level: DangerLevel) {
         context.dataStore.edit { preferences ->
             preferences[DANGER_LEVEL_KEY] = level.name
+        }
+    }
+
+    suspend fun setAccentColorIndex(index: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[ACCENT_COLOR_INDEX_KEY] = index
+        }
+    }
+
+    suspend fun setLiveUpdatesRender(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[LIVE_UPDATES_RENDER_KEY] = enabled
         }
     }
 

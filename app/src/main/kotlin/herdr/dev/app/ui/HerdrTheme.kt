@@ -26,11 +26,28 @@ val ClaudeDarkSurface0 = Color(0xFF0B0B0B)
 val ClaudeDarkSurface2 = Color(0xFF1A1A19)
 val ClaudeDarkBorder = Color(0xFF20201F)
 
-private val ClaudeLightColorScheme = lightColorScheme(
-    primary = ClaudeClay,
+// 5 Inline theme accent color options
+val ThemeAccentOptions = listOf(
+    Color(0xFFD97757), // Claude Clay (Default)
+    Color(0xFF2A9D8F), // Nord Teal
+    Color(0xFF3A86FF), // Cobalt Blue
+    Color(0xFF2D6A4F), // Pine / Forest
+    Color(0xFF555555), // Slate / Monolithic
+)
+
+val ThemeAccentNames = listOf(
+    "Clay",
+    "Teal",
+    "Cobalt",
+    "Pine",
+    "Slate"
+)
+
+private fun getLightColorScheme(primaryColor: Color) = lightColorScheme(
+    primary = primaryColor,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFFDF4F0),
-    onPrimaryContainer = ClaudeClayEmphasized,
+    primaryContainer = primaryColor.copy(alpha = 0.12f),
+    onPrimaryContainer = primaryColor,
     secondary = Color(0xFF6D6B67),
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFF0EFEC),
@@ -45,10 +62,10 @@ private val ClaudeLightColorScheme = lightColorScheme(
     outlineVariant = ClaudePaperBorder,
 )
 
-private val ClaudeDarkColorScheme = darkColorScheme(
-    primary = ClaudeClay,
+private fun getDarkColorScheme(primaryColor: Color) = darkColorScheme(
+    primary = primaryColor,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFF341307),
+    primaryContainer = primaryColor.copy(alpha = 0.22f),
     onPrimaryContainer = Color(0xFFF7D8CB),
     secondary = Color(0xFFA5A49A),
     onSecondary = Color(0xFF151515),
@@ -65,9 +82,13 @@ private val ClaudeDarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun HerdrTheme(content: @Composable () -> Unit) {
+fun HerdrTheme(
+    accentColorIndex: Int = 0,
+    content: @Composable () -> Unit
+) {
     val dark = isSystemInDarkTheme()
-    val colorScheme = if (dark) ClaudeDarkColorScheme else ClaudeLightColorScheme
+    val primaryColor = ThemeAccentOptions.getOrElse(accentColorIndex) { ThemeAccentOptions[0] }
+    val colorScheme = if (dark) getDarkColorScheme(primaryColor) else getLightColorScheme(primaryColor)
 
     MaterialTheme(
         colorScheme = colorScheme,

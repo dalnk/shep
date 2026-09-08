@@ -8,6 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import dagger.hilt.android.AndroidEntryPoint
 import herdr.dev.app.data.SettingsRepository
 import herdr.dev.app.services.HerdrMonitoringService
@@ -34,7 +36,8 @@ class MainActivity : ComponentActivity() {
 
         val launchPaneId = intent?.getStringExtra(EXTRA_PANE_ID)
         setContent {
-            HerdrTheme {
+            val accentIndex by settingsRepository.accentColorIndex.collectAsState(initial = 0)
+            HerdrTheme(accentColorIndex = accentIndex) {
                 HerdrApp(initialPaneId = launchPaneId)
             }
         }

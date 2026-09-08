@@ -21,6 +21,8 @@ data class SettingsUiState(
     val serverPort: String = "",
     val connectionType: herdr.dev.app.data.ConnectionType = herdr.dev.app.data.ConnectionType.LOCAL,
     val dangerLevel: herdr.dev.app.data.DangerLevel = herdr.dev.app.data.DangerLevel.NORMAL,
+    val accentColorIndex: Int = 0,
+    val liveUpdatesRender: Boolean = true,
     val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
     val totalWorkspaces: Int = 0,
     val totalPanes: Int = 0,
@@ -57,6 +59,16 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.dangerLevel.collect { level ->
                 _uiState.update { it.copy(dangerLevel = level) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.accentColorIndex.collect { idx ->
+                _uiState.update { it.copy(accentColorIndex = idx) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.liveUpdatesRender.collect { render ->
+                _uiState.update { it.copy(liveUpdatesRender = render) }
             }
         }
         viewModelScope.launch {
@@ -115,6 +127,18 @@ class SettingsViewModel @Inject constructor(
     fun updateDangerLevel(level: herdr.dev.app.data.DangerLevel) {
         viewModelScope.launch {
             settingsRepository.setDangerLevel(level)
+        }
+    }
+
+    fun updateAccentColorIndex(index: Int) {
+        viewModelScope.launch {
+            settingsRepository.setAccentColorIndex(index)
+        }
+    }
+
+    fun updateLiveUpdatesRender(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setLiveUpdatesRender(enabled)
         }
     }
 }
