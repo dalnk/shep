@@ -611,13 +611,17 @@ function ToolSummaryPill({ tools }: { tools: string[] }) {
   const summary = React.useMemo(() => {
     const counts: Record<string, number> = {};
     for (const t of tools) {
-      const cat = t.includes('run_command') ? 'commands' :
-                  t.includes('view_file') ? 'read files' :
-                  t.includes('replace_file_content') ? 'edits' : 'tools';
+      const tl = t.toLowerCase();
+      const cat = tl.includes('spawn') || tl.includes('subagent') ? 'background agents' :
+                  tl.includes('task') ? 'background tasks' :
+                  tl.includes('schedule') || tl.includes('timer') ? 'timers' :
+                  tl.includes('run') || tl.includes('command') ? 'commands' :
+                  tl.includes('read') || tl.includes('view') ? 'read files' :
+                  tl.includes('edit') || tl.includes('replace') || tl.includes('write') ? 'edits' : 'tools';
       counts[cat] = (counts[cat] || 0) + 1;
     }
     const parts = Object.entries(counts).map(([k, v]) => `${v} ${k}`);
-    return `${tools.length} tool calls (${parts.join(', ')})`;
+    return `${tools.length} actions (${parts.join(', ')})`;
   }, [tools]);
 
   return (
@@ -627,12 +631,14 @@ function ToolSummaryPill({ tools }: { tools: string[] }) {
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '5px',
+          gap: '6px',
           fontSize: '12px',
           color: 'var(--text-secondary)',
-          padding: '2px 8px',
+          padding: '3px 10px',
           borderRadius: '8px',
-          background: 'var(--bg-surface-high)'
+          background: 'var(--bg-surface-high)',
+          border: '1px solid var(--border-subtle)',
+          cursor: 'pointer'
         }}
       >
         <Zap size={12} color="var(--cds-clay)" />
@@ -642,17 +648,31 @@ function ToolSummaryPill({ tools }: { tools: string[] }) {
       {expanded && (
         <div style={{
           marginTop: '6px',
-          padding: '8px 12px',
+          padding: '10px 14px',
           borderRadius: '8px',
           background: 'var(--bg-surface-high)',
+          border: '1px solid var(--border-subtle)',
           fontFamily: 'var(--cds-font-mono)',
           fontSize: '11.5px',
           lineHeight: '1.6',
           color: 'var(--text-primary)'
         }}>
-          {tools.map((t, i) => (
-            <div key={i}>{t}</div>
-          ))}
+          {tools.map((t, i) => {
+            const tl = t.toLowerCase();
+            const isBg = tl.includes('spawn') || tl.includes('task') || tl.includes('subagent');
+            return (
+              <div key={i} style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px',
+                padding: '2px 0',
+                color: isBg ? 'var(--cds-clay)' : 'var(--text-primary)'
+              }}>
+                <span style={{ color: 'var(--text-secondary)' }}>•</span>
+                <span>{t}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

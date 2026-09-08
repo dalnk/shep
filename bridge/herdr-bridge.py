@@ -1081,12 +1081,41 @@ class Upstream:
                                 if isinstance(tc, dict):
                                     t_name = tc.get("toolName") or tc.get("name") or ""
                                     args = tc.get("args") or {}
-                                    summary = tc.get("toolSummary") or tc.get("toolAction") or args.get("toolSummary") or args.get("toolAction") or t_name
+                                    if isinstance(args, str):
+                                        try:
+                                            args = json.loads(args)
+                                        except Exception:
+                                            pass
+                                    summary = ""
+                                    if isinstance(args, dict):
+                                        summary = tc.get("toolSummary") or tc.get("toolAction") or args.get("toolSummary") or args.get("toolAction")
+                                        if not summary:
+                                            if t_name == "run_command" and args.get("CommandLine"):
+                                                cmd = str(args["CommandLine"]).strip('"').strip("'")
+                                                summary = f"Run: {cmd[:60]}"
+                                            elif t_name == "invoke_subagent":
+                                                subagents = args.get("Subagents", [])
+                                                roles = [s.get("Role", "agent") for s in subagents if isinstance(s, dict)]
+                                                summary = f"Spawn agent: {', '.join(roles)}" if roles else "Spawn background agent"
+                                            elif t_name == "manage_task":
+                                                action = args.get("Action", "task")
+                                                task_id = args.get("TaskId", "")
+                                                summary = f"Task {action}: {task_id.split('/')[-1] if '/' in task_id else task_id}"
+                                            elif t_name == "schedule":
+                                                prompt = args.get("Prompt", "timer")
+                                                summary = f"Schedule: {prompt}"
+                                            elif t_name in ("view_file", "replace_file_content", "write_to_file"):
+                                                fpath = args.get("AbsolutePath") or args.get("TargetFile") or ""
+                                                fname = os.path.basename(fpath.strip('"').strip("'")) if fpath else "file"
+                                                summary = f"{t_name.replace('_', ' ').capitalize()}: {fname}"
+                                    if not summary:
+                                        summary = t_name
+
                                     if isinstance(summary, str):
                                         summary = summary.strip().strip('"').strip("'")
                                     if summary:
                                         tools.append(summary)
-                                    if "ask_question" in t_name:
+                                    if "ask_question" in t_name and isinstance(args, dict):
                                         opts = args.get("options", ["y", "n"])
                                         if isinstance(opts, list) and len(opts) == 2 and set(opts) == {"y", "n"}:
                                             opts = ["y", "n", "p"]
