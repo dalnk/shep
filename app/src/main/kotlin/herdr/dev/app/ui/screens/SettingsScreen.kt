@@ -376,7 +376,7 @@ private fun SettingsContent(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 CompactAutonomySegment(
-                    title = "0 Danger",
+                    title = "Zero",
                     isSelected = state.dangerLevel == herdr.dev.app.data.DangerLevel.ZERO_DANGER,
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.updateDangerLevel(herdr.dev.app.data.DangerLevel.ZERO_DANGER) }
