@@ -17,3 +17,5 @@ __pycache__/
 .ok/
 .tempmediaStorage/
 tmp/
+web/node_modules/
+web/dist/
