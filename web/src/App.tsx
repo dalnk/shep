@@ -16,7 +16,9 @@ import {
   RefreshCw,
   Copy,
   Check,
-  X
+  X,
+  History,
+  Clock
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -70,16 +72,30 @@ export function App() {
   const [terminalPaneId, setTerminalPaneId] = useState<string>('');
   const [copiedTerminal, setCopiedTerminal] = useState<boolean>(false);
 
+  const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const isAutoScrollRef = useRef(true);
+  const initialLoadRef = useRef(true);
+  const lastPaneIdRef = useRef<string>('');
 
-  // Auto-scroll to bottom when messages update
+  // Auto-scroll logic: instant to bottom when opening/switching threads, smooth when streaming active messages
   useEffect(() => {
-    if (isAutoScrollRef.current) {
+    if (messages.length === 0) return;
+    
+    if (initialLoadRef.current || lastPaneIdRef.current !== selectedPaneId) {
+      initialLoadRef.current = false;
+      lastPaneIdRef.current = selectedPaneId;
+      // Instant scroll to bottom so there is no disorienting top-to-bottom scroll animation on opening a thread
+      if (canvasRef.current) {
+        canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
+      } else {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }
+    } else if (isAutoScrollRef.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, selectedPaneId]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget;
@@ -93,6 +109,16 @@ export function App() {
     isAutoScrollRef.current = true;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     setShowScrollBottom(false);
+  };
+
+  const jumpToTurn = (index: number) => {
+    setShowHistoryMenu(false);
+    const targetEl = document.getElementById(`msg-turn-${index}`);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      isAutoScrollRef.current = false;
+      setShowScrollBottom(true);
+    }
   };
 
   // Connect to Herdr Daemon WebSocket
@@ -507,10 +533,117 @@ export function App() {
           justifyContent: 'space-between',
           background: 'var(--bg-surface)'
         }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '15px' }}>{selectedPane?.title}</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Connected to {selectedPane?.agentName || 'agent'} {selectedPane?.modelShortname ? `(${selectedPane.modelShortname})` : ''} via herdr
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
+            {/* Claude Desktop Time Machine History Button */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowHistoryMenu(!showHistoryMenu)}
+                title="Thread history & time machine"
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-subtle)',
+                  background: showHistoryMenu ? 'var(--bg-surface-high)' : 'transparent',
+                  color: showHistoryMenu ? 'var(--cds-clay)' : 'var(--text-secondary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <History size={16} />
+              </button>
+
+              {/* Time Machine Popover Menu */}
+              {showHistoryMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '40px',
+                  left: '0',
+                  width: '300px',
+                  maxHeight: '380px',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
+                  zIndex: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    padding: '10px 14px',
+                    borderBottom: '1px solid var(--border-subtle)',
+                    background: 'var(--bg-surface-high)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    color: 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Clock size={13} />
+                      THREAD TIME MACHINE
+                    </span>
+                    <span>{messages.length} TURNS</span>
+                  </div>
+
+                  <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
+                    {messages.length === 0 ? (
+                      <div style={{ padding: '16px', fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                        No messages in thread yet.
+                      </div>
+                    ) : (
+                      messages.map((m, idx) => (
+                        <div
+                          key={m.id}
+                          onClick={() => jumpToTurn(idx)}
+                          style={{
+                            padding: '8px 10px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            marginBottom: '2px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '3px',
+                            transition: 'background 0.12s ease'
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-high)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--text-secondary)' }}>
+                            <span style={{ fontWeight: 600, color: m.sender === 'user' ? 'var(--text-primary)' : 'var(--cds-clay)' }}>
+                              {m.sender === 'user' ? 'You' : (selectedPane?.modelShortname || 'Assistant')}
+                            </span>
+                            <span>Turn #{idx + 1}</span>
+                          </div>
+                          <div style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            color: 'var(--text-primary)',
+                            fontSize: '11.5px'
+                          }}>
+                            {m.text.slice(0, 70) || (m.tools ? `[${m.tools.length} actions]` : '…')}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '15px' }}>{selectedPane?.title}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                Connected to {selectedPane?.agentName || 'agent'} {selectedPane?.modelShortname ? `(${selectedPane.modelShortname})` : ''} via herdr
+              </div>
             </div>
           </div>
           
@@ -589,8 +722,8 @@ export function App() {
                 <div>Ready for conversation with {selectedPane?.agentName || 'agent'}.</div>
               </div>
             )}
-            {messages.map(msg => (
-              <div key={msg.id} style={{ marginBottom: '32px' }}>
+            {messages.map((msg, idx) => (
+              <div id={`msg-turn-${idx}`} key={msg.id} style={{ marginBottom: '32px', scrollMarginTop: '20px' }}>
                 {msg.sender === 'user' ? (
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <div style={{
