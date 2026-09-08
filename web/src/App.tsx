@@ -64,6 +64,11 @@ export function App() {
 
   // Claude Desktop Secondary Pane state (starts collapsed, opens on clicking task/terminal/tool)
   const [showAuxPane, setShowAuxPane] = useState<boolean>(false);
+  const [auxPaneWidth, setAuxPaneWidth] = useState<number>(400);
+  const isDraggingRef = useRef<boolean>(false);
+  const startXRef = useRef<number>(0);
+  const startWidthRef = useRef<number>(400);
+
   const [auxTab, setAuxTab] = useState<'tasks' | 'terminal' | 'preview'>('tasks');
   const [terminalOutput, setTerminalOutput] = useState<string>('');
   const [terminalLoading, setTerminalLoading] = useState<boolean>(false);
@@ -181,6 +186,34 @@ export function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [messages]);
+
+  // Handle panel resizing via drag handle (matching Claude Desktop draggable split handle)
+  const handleMouseDownResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    startXRef.current = e.clientX;
+    startWidthRef.current = auxPaneWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const delta = startXRef.current - moveEvent.clientX;
+      const newWidth = Math.min(Math.max(280, startWidthRef.current + delta), window.innerWidth * 0.75);
+      setAuxPaneWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      isDraggingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
 
   // Connect to Herdr Daemon WebSocket
   useEffect(() => {
@@ -898,7 +931,7 @@ export function App() {
               style={{
                 position: 'fixed',
                 bottom: '88px',
-                right: showAuxPane ? 'calc(50% + 190px)' : 'calc(50% - 20px)',
+                right: showAuxPane ? `calc(50% + ${Math.round(auxPaneWidth / 2)}px)` : 'calc(50% - 20px)',
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
@@ -970,18 +1003,39 @@ export function App() {
         </div>
       </div>
 
-      {/* Claude Desktop Secondary Split Pane (Terminals / Tasks / Artifacts) */}
+      {/* Claude Desktop Secondary Split Pane with Draggable Resize Handle */}
       {showAuxPane && (
         <div style={{
-          width: '380px',
-          minWidth: '340px',
-          maxWidth: '460px',
+          position: 'relative',
+          width: `${auxPaneWidth}px`,
+          minWidth: '280px',
+          maxWidth: '75vw',
           background: 'var(--bg-surface)',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          flexShrink: 0
         }}>
+          {/* Draggable Vertical Split Handle */}
+          <div
+            onMouseDown={handleMouseDownResize}
+            title="Drag to resize panel"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              bottom: 0,
+              width: '5px',
+              cursor: 'col-resize',
+              zIndex: 30,
+              background: 'transparent',
+              transition: 'background 0.15s ease'
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--cds-clay)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          />
+
           {/* Pane Header with Tabs */}
           <div style={{
             display: 'flex',
