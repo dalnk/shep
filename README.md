@@ -1,6 +1,6 @@
 # Shepard (`shep`)
 
-> Companion remote control and monitor for [herdr](https://herdr.dev) swarms on Android & e-paper devices.
+> Work remote, shep. Minimalist companion and monitor for [herdr](https://herdr.dev) swarms on Android & e-paper devices.
 
 Shepard connects directly to your workstation or compute swarm running `herdr` over LAN / Tailscale / tunnels. It provides a real-time, responsive interface for overseeing multi-agent swarms (Codex, Claude, Underclass, Grok, Antigravity, GitHub Copilot) with full foldable and adaptive tablet support.
 
