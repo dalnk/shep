@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Star/Sparkle accent -->
+    <path
+        android:fillColor="#80CBC4"
+        android:pathData="M78,28 L80,34 L86,36 L80,38 L78,44 L76,38 L70,36 L76,34 Z" />
+    <path
+        android:fillColor="#4DB6AC"
+        android:pathData="M26,68 L27.5,72.5 L32,74 L27.5,75.5 L26,80 L24.5,75.5 L20,74 L24.5,72.5 Z" />
+    <!-- Shepard Shepherd's Crook / Modern Minimalist Emblem -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M42,76 L42,48 C42,37 50,30 60,30 C69,30 76,36 76,44 C76,51 70,56 62,56 C57,56 54,53 54,49" />
+    <!-- Node / Agent orb -->
+    <path
+        android:fillColor="#80CBC4"
+        android:pathData="M42,80 A4,4 0 1,1 42,72 A4,4 0 1,1 42,80" />
+</vector>

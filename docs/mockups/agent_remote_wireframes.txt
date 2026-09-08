@@ -1,0 +1,86 @@
+AGENT REMOTE WIREFRAMES
+=======================
+
+1) HOME / CONTROL CENTER
+
+┌────────────────────────────────────┐
+│ Herdr                 [● Connected]│
+│                                    │
+│ ┌──────────────────────────────┐   │
+│ │ Ask your agents...       [↑] │   │
+│ └──────────────────────────────┘   │
+│                                    │
+│ [Files] [Source] [SSH] [Search]    │
+│                                    │
+│ Active agents                      │
+│ ┌──────────────────────────────┐   │
+│ │ Fix auth bug        Working   │   │
+│ │ Claude Code                  │   │
+│ └──────────────────────────────┘   │
+│ ┌──────────────────────────────┐   │
+│ │ Review PR           Blocked   │   │
+│ │ Gemini                       │   │
+│ └──────────────────────────────┘   │
+│ ┌──────────────────────────────┐   │
+│ │ Polish onboarding   Idle     │   │
+│ │ Codex                        │   │
+│ └──────────────────────────────┘   │
+└────────────────────────────────────┘
+
+2) WORKSPACE DASHBOARD
+
+┌────────────────────────────────────┐
+│ Workspaces                         │
+│                                    │
+│ Workspace: app-api                 │
+│ ───────────────────────────────── │
+│ [Fix auth bug] Claude      ●       │
+│ [Review PR] Gemini         ○       │
+│                                    │
+│ Workspace: ui-redesign             │
+│ ───────────────────────────────── │
+│ [Polish onboarding] Codex  ○      │
+│ [Add dark mode] Claude     ●      │
+└────────────────────────────────────┘
+
+3) AGENT SESSION / CHAT
+
+┌────────────────────────────────────┐
+│ ← Fix auth bug           Claude    │
+│                                    │
+│ You: add retry logic              │
+│ Agent: I’m tracing the timeout    │
+│ Agent: I found a likely branch    │
+│ Agent: I can patch it now         │
+│                                    │
+│ ┌──────────────────────────────┐   │
+│ │ Type your next instruction  │   │
+│ └──────────────────────────────┘   │
+└────────────────────────────────────┘
+
+4) FILE EXPLORER
+
+┌────────────────────────────────────┐
+│ /workspace/app/src                 │
+│                                    │
+│ ├─ auth/                           │
+│ ├─ ui/                             │
+│ ├─ services/                       │
+│ └─ README.md                       │
+│                                    │
+│ [Open] [Download] [Inspect]        │
+└────────────────────────────────────┘
+
+5) SETTINGS
+
+┌────────────────────────────────────┐
+│ Settings                           │
+│                                    │
+│ Host: 192.168.1.24:8080            │
+│ Profile: Work Laptop              │
+│ Theme: Dark                       │
+│ Notifications: On                 │
+│ Biometric lock: Off               │
+│                                    │
+│ [Save] [Reconnect]                │
+└────────────────────────────────────┘
