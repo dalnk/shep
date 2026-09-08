@@ -1,6 +1,8 @@
 package herdr.dev.app.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +22,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
@@ -66,6 +70,9 @@ fun SettingsScreen(
     var darkMode by remember { mutableStateOf(true) }
     var notifications by remember { mutableStateOf(true) }
     val context = LocalContext.current
+
+    val isConnected = state.connectionState == herdr.dev.app.data.ConnectionState.CONNECTED
+    var showManualEndpoint by remember { mutableStateOf(!isConnected) }
 
     Scaffold(
         topBar = {
@@ -271,43 +278,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Server connection configuration section
-            Text(
-                text = "Network Endpoint",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = state.serverHost,
-                        onValueChange = { viewModel.updateServerHost(it) },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Bridge Host / Hostname") },
-                        placeholder = { Text("neo.local or 10.0.0.244") },
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = state.serverPort,
-                        onValueChange = { viewModel.updateServerPort(it) },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Bridge Port") },
-                        placeholder = { Text("8765") },
-                        singleLine = true
-                    )
-                }
-            }
-
             // Autonomous Mode & Danger Level Section
             Text(
                 text = "Autonomous Mode & Danger Level",
@@ -409,10 +379,85 @@ fun SettingsScreen(
 
             SettingCard(
                 title = "Shepard",
-                description = "v1.1.0 · herdr.dev remote interface",
+                description = "v0.0.1 · herdr.dev remote interface",
                 icon = Icons.Default.Info,
                 trailing = null
             )
+
+            // Advanced Connection / Host Endpoint (Discreetly tucked at the bottom)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showManualEndpoint = !showManualEndpoint },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.SettingsEthernet,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Column {
+                                Text(
+                                    text = "Manual Bridge Endpoint",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = if (isConnected) "Connected to ${state.serverHost}:${state.serverPort}" else "${state.serverHost}:${state.serverPort}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Icon(
+                            imageVector = if (showManualEndpoint) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = if (showManualEndpoint) "Collapse" else "Expand",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    AnimatedVisibility(visible = showManualEndpoint) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = state.serverHost,
+                                onValueChange = { viewModel.updateServerHost(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Bridge Host / Hostname") },
+                                placeholder = { Text("neo.local or 10.0.0.244") },
+                                singleLine = true
+                            )
+                            OutlinedTextField(
+                                value = state.serverPort,
+                                onValueChange = { viewModel.updateServerPort(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text("Bridge Port") },
+                                placeholder = { Text("8765") },
+                                singleLine = true
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
