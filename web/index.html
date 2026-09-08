@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shep — Pocket Controller for AI Agent Swarms</title>
+  <meta name="description" content="Pure static, minimal, high-contrast Android companion for your coding agent swarms. Passkey-paired, Tailcat-synced, e-paper & foldable ready.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0b;
+      --card-bg: #111315;
+      --card-border: #1f2327;
+      --text: #f0f3f6;
+      --text-muted: #8d96a0;
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.08);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 1.25rem 5rem;
+    }
+
+    .container {
+      max-width: 740px;
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 3.5rem 0 2rem;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--text);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.25rem;
+      font-size: 0.875rem;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .hero {
+      padding: 4rem 0 2.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--accent-glow);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: var(--accent);
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin-bottom: 1.25rem;
+    }
+
+    p.lead {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      max-width: 620px;
+    }
+
+    .quickstart {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .quickstart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    .command-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #000;
+      border: 1px solid #23272c;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    .copy-btn {
+      background: #1c2024;
+      border: 1px solid #30363d;
+      color: var(--text);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      margin-left: 1rem;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      background: #2a3036;
+    }
+
+    .terminal-preview {
+      background: #000;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin-bottom: 3.5rem;
+      line-height: 1.65;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #1c2025;
+      color: #6e7681;
+      font-size: 0.75rem;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #2c3138;
+    }
+
+    .log-agent { color: #a5d6ff; }
+    .log-status { color: #7ee787; }
+    .log-action { color: #d2a8ff; }
+    .log-user { color: #ffa657; }
+
+    .cursor {
+      display: inline-block;
+      width: 7px;
+      height: 14px;
+      background: #38bdf8;
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: #383e46;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .passkey-box {
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.03) 0%, rgba(56, 189, 248, 0.01) 100%);
+      border-radius: 12px;
+      padding: 2.25rem 1.75rem;
+      margin-bottom: 3.5rem;
+      text-align: center;
+    }
+
+    .passkey-box h2 {
+      font-size: 1.35rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .passkey-box p {
+      color: var(--text-muted);
+      font-size: 0.925rem;
+      margin-bottom: 1.5rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--text);
+      color: var(--bg);
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: opacity 0.15s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn:hover {
+      opacity: 0.92;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--card-bg);
+    }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    footer a:hover {
+      color: var(--text);
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2.1rem; }
+      .grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      footer { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="logo">
+        <span class="logo-badge">S</span>
+        <span>Shep</span>
+      </a>
+      <nav class="nav-links">
+        <a href="https://github.com/dalnk/shep" target="_blank" rel="noopener">GitHub</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="#features">Features</a>
+        <a href="#cloud">Cloud Sync</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span>Open Source Agent Companion</span>
+      </div>
+      <h1>Pocket Controller for Agent Swarms</h1>
+      <p class="lead">
+        A fast, battery-light Android companion for your coding agents. Built for Daylight e-paper tablets, foldables, and pocket phones. Zero telemetry, instant warm rehydration.
+      </p>
+
+      <div class="quickstart" id="quickstart">
+        <div class="quickstart-header">
+          <span>1. Install companion host & bridge</span>
+          <span>curl / bash</span>
+        </div>
+        <div class="command-box">
+          <code>curl -fsSL https://sheperd.sh | sh</code>
+          <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://sheperd.sh | sh'); this.innerText='Copied!'">Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="terminal-preview">
+      <div class="terminal-header">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span>herdr-bridge v1.0.0 — active agent stream</span>
+      </div>
+      <div><span class="log-agent">[daybreak/codex]</span> <span class="log-action">Editing</span> <code>HomeScreen.kt</code></div>
+      <div><span class="log-agent">[daybreak/codex]</span> <span class="log-status">DONE</span> 1 file modified (0 errors)</div>
+      <div><span class="log-user">[you via shep]</span> Proceed with dangermaxxing test suite</div>
+      <div><span class="log-agent">[daybreak/codex]</span> <span class="log-status">WORKING</span> Running <code>./gradlew check</code>... <span class="cursor"></span></div>
+    </div>
+
+    <section id="features">
+      <div class="grid">
+        <div class="card">
+          <h3>⚡️ Instant Warm Cache</h3>
+          <p>Switch between agent tabs and rotate screens with 0ms delay. Prior runs remain instantly readable even while offline.</p>
+        </div>
+        <div class="card">
+          <h3>📖 E-Paper & Daylight Ready</h3>
+          <p>Engineered for high-contrast e-ink and Daylight Computer displays with pure monochrome rendering and high-visibility controls.</p>
+        </div>
+        <div class="card">
+          <h3>🪟 Foldable & Split Layouts</h3>
+          <p>Two-pane dual-screen workflow on foldables and tablets. View live agent swarms alongside raw terminal panes with collapsible sidebars.</p>
+        </div>
+        <div class="card">
+          <h3>🛡️ Danger Mode Automation</h3>
+          <p>Configure autonomy level from <em>0 Danger</em> (strict review) to <em>Dangermaxxing</em> for autonomous auto-approval on trusted agent workflows.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="passkey-box" id="cloud">
+      <h2>shep.work Cloud Sync</h2>
+      <p>Seamless Tailcat peer-to-peer sync. No passwords, no email verification friction. Log in once with a biometric Passkey.</p>
+      <div class="btn-row">
+        <button class="btn" onclick="alert('Passkey pairing will be linked to your cloud relay.')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-1-1l-2 2M15 7a4 4 0 1 0-8 0v2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V7a4 4 0 0 0-4-4z"></path></svg>
+          Sign in with Passkey
+        </button>
+        <a href="https://github.com/dalnk/shep/releases" class="btn btn-secondary" target="_blank" rel="noopener">Download APK</a>
+      </div>
+    </section>
+
+    <footer>
+      <div>Shep &bull; <a href="https://github.com/dalnk/shep">github.com/dalnk/shep</a></div>
+      <div>Domains: shep.work &bull; sheperd.dev &bull; sheperd.sh</div>
+    </footer>
+  </div>
+</body>
+</html>
