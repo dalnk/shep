@@ -18,6 +18,20 @@ if ! command -v python3 >/dev/null 2>&1; then
     exit 1
 fi
 
+# Check and auto-install herdr if not present
+if ! command -v herdr >/dev/null 2>&1 && [ ! -x "${HOME}/.local/bin/herdr" ]; then
+    echo -e "${YELLOW}Notice: 'herdr' not detected on system.${RESET}"
+    echo -e "Installing herdr runtime from https://herdr.dev ..."
+    if curl -fsSL https://herdr.dev/install.sh | sh; then
+        echo -e "${GREEN}✓ herdr successfully installed!${RESET}\n"
+        export PATH="${HOME}/.local/bin:${PATH}"
+    else
+        echo -e "${YELLOW}Warning: Automatic herdr install failed. You can install it manually from https://herdr.dev${RESET}\n"
+    fi
+else
+    echo -e "${GREEN}✓ herdr is already installed.${RESET}"
+fi
+
 INSTALL_DIR="${HOME}/.shep"
 mkdir -p "${INSTALL_DIR}"
 
@@ -25,11 +39,17 @@ echo -e "Fetching bridge script from GitHub..."
 curl -fsSL "https://raw.githubusercontent.com/dalnk/shep/main/bridge/herdr-bridge.py" -o "${INSTALL_DIR}/herdr-bridge.py"
 chmod +x "${INSTALL_DIR}/herdr-bridge.py"
 
-# Detect herdr socket
+# Detect herdr socket or auto-start server if needed
 HERDR_SOCKET="${HOME}/.config/herdr/herdr.sock"
 if [ ! -S "${HERDR_SOCKET}" ]; then
-    echo -e "${YELLOW}Note: herdr socket not currently detected at ${HERDR_SOCKET}${RESET}"
-    echo -e "Start herdr first, or run herdr-bridge manually."
+    echo -e "${DIM}Starting herdr daemon in background...${RESET}"
+    if command -v herdr >/dev/null 2>&1; then
+        herdr server >/dev/null 2>&1 &
+        sleep 1
+    elif [ -x "${HOME}/.local/bin/herdr" ]; then
+        "${HOME}/.local/bin/herdr" server >/dev/null 2>&1 &
+        sleep 1
+    fi
 fi
 
 # Determine LAN IP

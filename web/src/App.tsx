@@ -18,7 +18,8 @@ import {
   Check,
   X,
   Smartphone,
-  ArrowUpRight
+  ArrowUpRight,
+  Cloud
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -1482,23 +1483,28 @@ interface PairingModalProps {
 }
 
 function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: PairingModalProps) {
-  const [activeTab, setActiveTab] = useState<'quick' | 'tailscale' | 'android'>('quick');
+  const [activeTab, setActiveTab] = useState<'quick' | 'tailscale' | 'cloud' | 'android'>('quick');
   const [inputHost, setInputHost] = useState(host);
   const [inputPort, setInputPort] = useState(port);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
+  const [copiedInstallCmd, setCopiedInstallCmd] = useState(false);
 
   // Detect current origin
   const origin = window.location.origin;
   const webPairUrl = `${origin}/?h=${encodeURIComponent(inputHost)}&p=${encodeURIComponent(inputPort)}`;
   const androidDeepLink = `shep://pair?host=${encodeURIComponent(inputHost)}&port=${encodeURIComponent(inputPort)}`;
   const bridgeCmd = `python3 bridge/herdr-bridge.py`;
+  const installCmd = `curl -fsSL https://shep.work/install.sh | bash`;
 
-  const copyToClipboard = (text: string, type: 'link' | 'cmd') => {
+  const copyToClipboard = (text: string, type: 'link' | 'cmd' | 'install') => {
     navigator.clipboard.writeText(text);
     if (type === 'link') {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
+    } else if (type === 'install') {
+      setCopiedInstallCmd(true);
+      setTimeout(() => setCopiedInstallCmd(false), 2000);
     } else {
       setCopiedCmd(true);
       setTimeout(() => setCopiedCmd(false), 2000);
@@ -1598,6 +1604,21 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
             1. Quick Connect
           </button>
           <button
+            onClick={() => setActiveTab('cloud')}
+            style={{
+              padding: '12px 14px',
+              fontSize: '12.5px',
+              fontWeight: 600,
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === 'cloud' ? '2px solid var(--cds-clay)' : '2px solid transparent',
+              color: activeTab === 'cloud' ? 'var(--cds-clay)' : 'var(--text-secondary)',
+              cursor: 'pointer'
+            }}
+          >
+            2. Cloud Account
+          </button>
+          <button
             onClick={() => setActiveTab('tailscale')}
             style={{
               padding: '12px 14px',
@@ -1610,7 +1631,7 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
               cursor: 'pointer'
             }}
           >
-            2. Tailscale / Tailcat
+            3. Tailscale
           </button>
           <button
             onClick={() => setActiveTab('android')}
@@ -1625,7 +1646,7 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
               cursor: 'pointer'
             }}
           >
-            3. Android App
+            4. Android App
           </button>
         </div>
 
@@ -1636,10 +1657,10 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
               {/* Step 1 */}
               <div>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--cds-clay)', marginBottom: '4px' }}>
-                  STEP 1: START THE BRIDGE
+                  STEP 1: START OR INSTALL HERDR & BRIDGE
                 </div>
                 <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  Run this single command in terminal inside your repository:
+                  If you have the repository cloned, run:
                 </div>
                 <div style={{
                   display: 'flex',
@@ -1651,7 +1672,8 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
                   fontFamily: 'var(--cds-font-mono)',
                   fontSize: '12.5px',
                   color: '#e4e4e7',
-                  border: '1px solid var(--border-subtle)'
+                  border: '1px solid var(--border-subtle)',
+                  marginBottom: '10px'
                 }}>
                   <code>{bridgeCmd}</code>
                   <button
@@ -1669,6 +1691,40 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
                   >
                     {copiedCmd ? <Check size={14} color="var(--cds-clay)" /> : <Copy size={14} />}
                     <span>{copiedCmd ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Don't have herdr yet? Run the automated 1-line installer (installs herdr + bridge):
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: '#121212',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  fontFamily: 'var(--cds-font-mono)',
+                  fontSize: '12px',
+                  color: '#38bdf8',
+                  border: '1px solid var(--border-subtle)'
+                }}>
+                  <code>{installCmd}</code>
+                  <button
+                    onClick={() => copyToClipboard(installCmd, 'install')}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px'
+                    }}
+                  >
+                    {copiedInstallCmd ? <Check size={14} color="#38bdf8" /> : <Copy size={14} />}
+                    <span>{copiedInstallCmd ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
               </div>
@@ -1774,6 +1830,67 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
                     <span>{copiedLink ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'cloud' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px', lineHeight: '1.6' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Cloud size={18} color="var(--cds-clay)" />
+                <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
+                  Pairing with Herdr / Shep Cloud
+                </span>
+              </div>
+
+              <div style={{ color: 'var(--text-secondary)' }}>
+                You can try your cloud runners and remote boxes through Shep immediately. Herdr runs headless on your cloud servers, EC2, VPS, or remote machines, and relays sessions directly to your browser.
+              </div>
+
+              <div style={{
+                background: 'var(--bg-surface-high)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '10px',
+                padding: '14px'
+              }}>
+                <div style={{ fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                  How to link your remote or cloud server:
+                </div>
+                <ol style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-secondary)', fontSize: '12.5px', lineHeight: '1.6' }}>
+                  <li>SSH into your cloud server or VM.</li>
+                  <li>Run the 1-liner installer: <code>curl -fsSL https://shep.work/install.sh | bash</code> (auto-installs herdr and bridge).</li>
+                  <li>Copy the 1-click pairing URL output by the bridge (e.g. <code>https://shep.work/?h=your-cloud-ip&p=8765</code>).</li>
+                  <li>Paste your cloud host / DNS into the Quick Connect tab, or open the link directly!</li>
+                </ol>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                background: '#121212',
+                padding: '12px 14px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)'
+              }}>
+                <div style={{ fontSize: '11px', color: '#888', fontWeight: 600 }}>CONNECT VIA SSH / REMOTE HERDR</div>
+                <div style={{ fontFamily: 'var(--cds-font-mono)', fontSize: '12px', color: '#e4e4e7' }}>
+                  herdr --remote user@your-cloud-box
+                </div>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                background: 'rgba(217, 119, 87, 0.08)',
+                color: 'var(--cds-clay)',
+                fontSize: '12px'
+              }}>
+                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                <span>Zero vendor lock-in: work directly with your own cloud VPS, AWS, or local workstations.</span>
               </div>
             </div>
           )}
