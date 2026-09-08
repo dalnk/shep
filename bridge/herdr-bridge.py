@@ -150,6 +150,19 @@ class Upstream:
         if "jsonrpc" not in payload:
             payload = {**payload, "jsonrpc": "2.0"}
         if payload.get("method") == "events.subscribe":
+            params = payload.get("params", {})
+            subs_list = params.get("subscriptions")
+            if not isinstance(subs_list, list) or not subs_list:
+                # Default subscriptions to avoid upstream error: missing field `subscriptions`
+                params = {
+                    "subscriptions": [
+                        {"type": "pane.updated"},
+                        {"type": "pane.created"},
+                        {"type": "pane.closed"},
+                        {"type": "workspace.updated"},
+                    ]
+                }
+                payload = {**payload, "params": params}
             try:
                 key = json.dumps(payload.get("params", {}), sort_keys=True)
                 with self._subs_lock:
@@ -630,6 +643,18 @@ class Upstream:
             raw_title = p_copy.get("terminal_title_stripped") or p_copy.get("terminal_title") or p_copy.get("title") or ""
             cwd_name = os.path.basename(cwd.rstrip("/")) if cwd else ""
             display_agent = "under" if agent == "_" else (agent or "shell")
+
+            # Detect background agent / task
+            is_background = bool(
+                p_copy.get("is_background")
+                or "worktree" in cwd.lower()
+                or "copilot-worktrees" in cwd.lower()
+                or "task-" in raw_title.lower()
+                or "subagent" in raw_title.lower()
+                or "spoon" in raw_title.lower()
+                or (display_agent == "shell" and not p_copy.get("focused"))
+            )
+            p_copy["is_background"] = is_background
 
             if not raw_title or raw_title == pane_id or raw_title.startswith("w1:") or raw_title.startswith("Pane "):
                 if cwd_name and cwd_name not in ("dalnk", "Users"):
