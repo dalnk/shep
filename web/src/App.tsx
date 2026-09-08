@@ -534,11 +534,15 @@ export function App() {
           background: 'var(--bg-surface)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
-            {/* Claude Desktop Time Machine History Button */}
-            <div style={{ position: 'relative' }}>
+            {/* Claude Desktop Hoverable Time Machine / Conversation Beats Tooltip */}
+            <div 
+              style={{ position: 'relative' }}
+              onMouseEnter={() => setShowHistoryMenu(true)}
+              onMouseLeave={() => setShowHistoryMenu(false)}
+            >
               <button
                 onClick={() => setShowHistoryMenu(!showHistoryMenu)}
-                title="Thread history & time machine"
+                title="Conversation beats (hover to preview timeline)"
                 style={{
                   width: '32px',
                   height: '32px',
@@ -556,23 +560,28 @@ export function App() {
                 <History size={16} />
               </button>
 
-              {/* Time Machine Popover Menu */}
+              {/* Hover Tooltip / Beats Timeline Popover */}
               {showHistoryMenu && (
-                <div style={{
-                  position: 'absolute',
-                  top: '40px',
-                  left: '0',
-                  width: '300px',
-                  maxHeight: '380px',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
-                  zIndex: 100,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden'
-                }}>
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '36px',
+                    left: '0',
+                    width: '320px',
+                    maxHeight: '400px',
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
+                    zIndex: 100,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    animation: 'fadeIn 0.12s ease'
+                  }}
+                  onMouseEnter={() => setShowHistoryMenu(true)}
+                  onMouseLeave={() => setShowHistoryMenu(false)}
+                >
                   <div style={{
                     padding: '10px 14px',
                     borderBottom: '1px solid var(--border-subtle)',
