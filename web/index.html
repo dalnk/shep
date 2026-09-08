@@ -1,14 +1,1001 @@
 <!DOCTYPE html>
-<html lang="en" class="cds-root" data-mode="system">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shep</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/src/index.css" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHeP — Super Helpful Pocket Remote</title>
+  <meta name="description" content="A lightweight, zero-latency Android remote for herdr agent swarms. Tested on everyday phones like Nothing, Pixel Fold, and the Daylight Computer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* AMOLED Pure Black & Braun Contrast Palette */
+      --bg: #000000;
+      --surface: #0e1013;
+      --surface-elevated: #16181d;
+      --border-dark: #1d2128;
+      --border-light: #2c323d;
+      --text-main: #f0f2f5;
+      --text-dim: #9aa1ad;
+      --text-muted: #5e6573;
+      
+      --signal-orange: #ff5500;
+      --signal-amber: #e6a100;
+      --signal-green: #2ecc71;
+      
+      --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #000000;
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 1.5rem 5rem;
+    }
+
+    .frame {
+      max-width: 860px;
+      margin: 0 auto;
+      border-left: 1px solid var(--border-dark);
+      border-right: 1px solid var(--border-dark);
+      padding: 0 2rem;
+      background: #000000;
+    }
+
+    .utility-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--border-dark);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .status-indicator:hover {
+      color: #ffffff;
+    }
+
+    .download-icon-thin {
+      stroke-width: 1.5;
+      display: flex;
+      align-items: center;
+      transition: transform 0.15s ease;
+    }
+
+    .status-indicator:hover .download-icon-thin {
+      transform: translateY(1px);
+      color: var(--signal-orange);
+    }
+
+    .status-pip {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--signal-orange);
+    }
+
+    header {
+      padding: 2.5rem 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .brand-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .model-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border-dark);
+      color: var(--text-muted);
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+
+    .hero {
+      padding: 3.5rem 0 0;
+    }
+
+    .index-mark {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--signal-orange);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      margin-bottom: 1.25rem;
+      color: #ffffff;
+    }
+
+    p.lead {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 660px;
+      line-height: 1.6;
+      margin-bottom: 2.75rem;
+    }
+
+    .console-module {
+      background: var(--surface);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      margin-bottom: 1.75rem;
+    }
+
+    .module-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 1rem;
+      background: #08090a;
+      border-bottom: 1px solid var(--border-dark);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .command-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: #040405;
+      overflow-x: auto;
+    }
+
+    .command-strip code {
+      color: #38bdf8;
+    }
+
+    .action-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 2px;
+      cursor: pointer;
+      margin-left: 1.25rem;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      background: #23272f;
+      border-color: #434b57;
+    }
+
+    /* ========================================================= */
+    /* CLEAN ADAPTIVE HARDWARE SHOWCASE (NEUTRAL VERTICAL FLOW)  */
+    /* ========================================================= */
+    .device-showcase-stage {
+      background: transparent;
+      padding: 0 0 3.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Fixed vertical anchor box so morphing width/height causes ZERO vertical layout jitter */
+    .device-viewport-anchor {
+      width: 100%;
+      height: 490px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Device chassis morphs between exact real hardware aspect ratios:
+       1. Nothing Phone: 20:9 (210px x 472px)
+       2. Pixel Fold Unfolded: 6:5 (440px x 367px)
+       3. Daylight Computer Tablet: 4:3 (560px x 420px)
+    */
+    .device-chassis {
+      background: #000000;
+      border: 2px solid #232730;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 0 1px #111317;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      animation: morphDeviceExact 14s infinite ease-in-out;
+      transform-origin: center top;
+      overflow: hidden;
+    }
+
+    /* Screen contents */
+    .device-screen {
+      background: #0a0b0d;
+      border-radius: 20px;
+      overflow: hidden;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #191c22;
+      position: relative;
+    }
+
+    /* Top App Bar inside Shep */
+    .app-top-bar {
+      background: #111317;
+      border-bottom: 1px solid #1f232b;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-ui);
+      flex-shrink: 0;
+    }
+
+    .app-top-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wifi-icon-svg {
+      color: #64b5f6;
+      display: flex;
+      align-items: center;
+    }
+
+    .app-title-text {
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .danger-pill {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      font-weight: 700;
+      background: rgba(255, 85, 0, 0.15);
+      border: 1px solid rgba(255, 85, 0, 0.3);
+      color: var(--signal-orange);
+      padding: 2px 6px;
+      border-radius: 9999px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Workspace */
+    .app-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sidebar (collapses on Nothing phone, expands on Pixel Fold / Daylight) */
+    .app-sidebar {
+      background: #0e1014;
+      border-right: 1px solid #1c2027;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: morphSidebarExact 14s infinite ease-in-out;
+    }
+
+    .sidebar-search {
+      background: #16181e;
+      border: 1px solid #232731;
+      border-radius: 9999px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
+
+    .thread-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-working { background: var(--signal-orange); }
+    .dot-idle { background: #474c55; }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      color: var(--text-dim);
+    }
+
+    .sidebar-item.active {
+      background: #1c1f26;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-size: 0.52rem;
+      padding: 1px 4px;
+      border-radius: 2px;
+      margin-left: auto;
+    }
+    .badge-working { background: rgba(255, 85, 0, 0.2); color: var(--signal-orange); }
+    .badge-idle { background: rgba(154, 160, 170, 0.12); color: var(--text-muted); }
+
+    /* Chat Pane */
+    .app-chat-pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 14px;
+      background: #07080a;
+      overflow: hidden;
+    }
+
+    .thread-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #16191f;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      margin-bottom: 8px;
+    }
+
+    .token-counter {
+      color: var(--text-muted);
+      font-size: 0.62rem;
+      transition: all 0.5s ease;
+      animation: toggleTokens 14s infinite ease-in-out;
+    }
+
+    /* Hide token counter in narrow phone mode (0% - 28%), show on unfolded / tablet */
+    @keyframes toggleTokens {
+      0%, 28% {
+        opacity: 0;
+        display: none;
+        width: 0;
+        overflow: hidden;
+      }
+      34%, 95% {
+        opacity: 1;
+        display: inline;
+        width: auto;
+      }
+      100% {
+        opacity: 0;
+        display: none;
+        width: 0;
+      }
+    }
+
+    .chat-bubble {
+      padding: 7px 12px;
+      border-radius: 12px;
+      font-size: 0.73rem;
+      line-height: 1.45;
+      margin-bottom: 6px;
+      max-width: 88%;
+      font-family: var(--font-ui);
+    }
+
+    .bubble-agent {
+      background: #121418;
+      border: 1px solid #1e222b;
+      color: #cfd5df;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble-agent code {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: #7ee787;
+    }
+
+    .bubble-user {
+      background: #242730;
+      color: #fff;
+      align-self: flex-end;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Minimal integrated rounded input bar */
+    .app-input-bar {
+      margin-top: auto;
+      background: #0f1115;
+      border: 1px solid #222630;
+      border-radius: 9999px;
+      padding: 5px 6px 5px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-family: var(--font-ui);
+    }
+
+    .send-pill {
+      background: #ffffff;
+      color: #000000;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Mode indicator label below device */
+    .mode-caption {
+      margin-top: 1.75rem;
+      display: flex;
+      gap: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .mode-tab {
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      color: var(--text-muted);
+      transition: all 0.4s ease;
+    }
+
+    /* Precise Aspect Ratio Keyframes:
+       0% - 28%: Nothing Phone (20:9 ratio -> 210px x 472px)
+       34% - 62%: Pixel Fold Unfolded (6:5 ratio -> 440px x 367px)
+       68% - 95%: Daylight Computer (4:3 ratio -> 560px x 420px)
+    */
+    @keyframes morphDeviceExact {
+      0%, 28% {
+        width: 216px;
+        height: 480px;
+        border-radius: 28px;
+      }
+      34%, 62% {
+        width: 440px;
+        height: 367px;
+        border-radius: 20px;
+      }
+      68%, 95% {
+        width: 560px;
+        height: 420px;
+        border-radius: 16px;
+      }
+      100% {
+        width: 216px;
+        height: 480px;
+        border-radius: 28px;
+      }
+    }
+
+    @keyframes morphSidebarExact {
+      0%, 28% {
+        /* Collapsed completely on Nothing phone */
+        width: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        opacity: 0;
+        border-right: none;
+      }
+      34%, 62% {
+        /* Unfolded Pixel Fold: Split View */
+        width: 140px;
+        padding: 10px 8px;
+        opacity: 1;
+        border-right: 1px solid #1c2027;
+      }
+      68%, 95% {
+        /* Daylight Tablet: Master Sidebar */
+        width: 175px;
+        padding: 10px 8px;
+        opacity: 1;
+        border-right: 1px solid #1c2027;
+      }
+      100% {
+        width: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+        opacity: 0;
+      }
+    }
+
+    /* Indicators sync */
+    .mode-1 { animation: activeMode1 14s infinite; }
+    .mode-2 { animation: activeMode2 14s infinite; }
+    .mode-3 { animation: activeMode3 14s infinite; }
+
+    @keyframes activeMode1 {
+      0%, 28% { color: var(--signal-orange); font-weight: 700; background: rgba(255, 85, 0, 0.1); }
+      34%, 100% { color: var(--text-muted); font-weight: normal; background: transparent; }
+    }
+    @keyframes activeMode2 {
+      0%, 28% { color: var(--text-muted); font-weight: normal; background: transparent; }
+      34%, 62% { color: var(--signal-orange); font-weight: 700; background: rgba(255, 85, 0, 0.1); }
+      68%, 100% { color: var(--text-muted); font-weight: normal; background: transparent; }
+    }
+    @keyframes activeMode3 {
+      0%, 62% { color: var(--text-muted); font-weight: normal; background: transparent; }
+      68%, 95% { color: var(--signal-orange); font-weight: 700; background: rgba(255, 85, 0, 0.1); }
+      100% { color: var(--text-muted); font-weight: normal; background: transparent; }
+    }
+
+    /* Specs Grid */
+    .instrument-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .instrument-cell {
+      background: var(--surface);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .instrument-cell::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: transparent;
+      transition: background 0.2s ease;
+    }
+
+    .instrument-cell:hover::before {
+      background: var(--signal-orange);
+    }
+
+    .cell-id {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .instrument-cell h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .instrument-cell p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .ecosystem-unit {
+      grid-column: 1 / -1;
+      border-color: var(--border-light);
+      background: var(--surface-elevated);
+    }
+
+    .ecosystem-unit h3 a {
+      color: var(--text-main);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    /* Origin Manifesto Section */
+    .origin-manifesto {
+      border-top: 1px solid var(--border-dark);
+      padding: 3.5rem 0 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .manifesto-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--signal-orange);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.85rem;
+      display: block;
+    }
+
+    .origin-manifesto h2 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      max-width: 680px;
+    }
+
+    .manifesto-content {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      line-height: 1.68;
+    }
+
+    .manifesto-content p {
+      margin-bottom: 1.25rem;
+    }
+
+    .manifesto-lead {
+      color: var(--text-main);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .manifesto-content a {
+      color: var(--text-main);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .cta-strip {
+      padding: 2.75rem 0 3.5rem;
+      text-align: center;
+      border-top: 1px solid var(--border-dark);
+    }
+
+    .primary-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--text-main);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 3px;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      letter-spacing: -0.01em;
+      transition: background 0.15s;
+    }
+
+    .primary-btn:hover {
+      background: #ffffff;
+    }
+
+    .secondary-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-light);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      margin-left: 0.75rem;
+      transition: all 0.15s;
+    }
+
+    .secondary-btn:hover {
+      background: var(--surface);
+      border-color: #434b57;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-dark);
+      padding: 1.75rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--text-main);
+    }
+
+    @media (max-width: 680px) {
+      .frame { padding: 0 1.25rem; border: none; }
+      h1 { font-size: 2.2rem; }
+      .instrument-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; gap: 1rem; }
+      .nav-links { gap: 1rem; }
+      footer { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+      .secondary-btn { margin-left: 0; margin-top: 0.75rem; }
+      .device-showcase-stage { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="utility-strip">
+      <span>ANDROID &bull; EPAPER &bull; FOLDABLES</span>
+      <a href="/download" class="status-indicator" title="Download SHeP Android APK" target="_blank" rel="noopener">
+        <span class="status-pip"></span>
+        <span>EARLY ACCESS v0.0.1 // LOCAL-FIRST</span>
+        <svg class="download-icon-thin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </a>
+    </div>
+
+    <header>
+      <div class="brand">
+        <a href="/" class="brand-title">SHeP</a>
+        <span class="model-tag">EARLY ACCESS v0.0.1</span>
+      </div>
+      <nav class="nav-links">
+        <a href="https://github.com/dalnk/shep" target="_blank" rel="noopener">SOURCE</a>
+        <a href="#install">INSTALL</a>
+        <a href="#specs">SPECIFICATION</a>
+        <a href="https://github.com/dalnk/shep/releases" target="_blank" rel="noopener">BUILDS</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <span class="index-mark">01 // SUPER HELPFUL POCKET (REMOTE)</span>
+      <h1>Work remote, shepard</h1>
+      <p class="lead">
+        A fast, battery-light Android companion and remote control for your coding agent swarms. Zero cloud dependency, zero telemetry, instant warm session rehydration.
+      </p>
+
+      <div class="console-module" id="install">
+        <div class="module-bar">
+          <span>HOST INSTALLATION SCRIPT</span>
+          <span>CURL / BASH INTERFACE</span>
+        </div>
+        <div class="command-strip">
+          <code>curl -fsSL https://sheperd.sh | sh</code>
+          <button class="action-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://sheperd.sh | sh'); this.innerText='COPIED!'">COPY COMMAND</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seamless Hardware Form-Factor Showcase -->
+    <div class="device-showcase-stage">
+      <div class="device-viewport-anchor">
+        <div class="device-chassis">
+          <div class="device-screen">
+            <!-- Top App Bar exactly matching HomeScreen / ChatScreen -->
+            <div class="app-top-bar">
+              <div class="app-top-left">
+                <span class="wifi-icon-svg">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+                </span>
+                <span class="app-title-text">Shepard</span>
+              </div>
+              <div class="app-top-right">
+                <span class="danger-pill">DANGERMAXXING</span>
+              </div>
+            </div>
+
+            <!-- Body with Morphing Sidebar and Chat Area -->
+            <div class="app-body">
+              <!-- Sidebar with Search/Ask bar & Threads -->
+              <div class="app-sidebar">
+                <div class="sidebar-search">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <span>Filter or ask _</span>
+                </div>
+                <div class="sidebar-item active">
+                  <span class="thread-dot dot-working"></span>
+                  <span>daybreak</span>
+                  <span class="status-badge badge-working">WORK</span>
+                </div>
+                <div class="sidebar-item">
+                  <span class="thread-dot dot-idle"></span>
+                  <span>codex-test</span>
+                  <span class="status-badge badge-idle">IDLE</span>
+                </div>
+                <div class="sidebar-item">
+                  <span class="thread-dot dot-idle"></span>
+                  <span>swarm-bridge</span>
+                  <span class="status-badge badge-idle">IDLE</span>
+                </div>
+              </div>
+
+              <!-- Chat Pane -->
+              <div class="app-chat-pane">
+                <div class="thread-header">
+                  <span style="color: #58a6ff; font-weight: 600;">daybreak // codex</span>
+                  <span class="token-counter">tokens: 4,120</span>
+                </div>
+
+                <div class="chat-bubble bubble-agent">
+                  Modified <code>HomeScreen.kt</code> with collapsible sidebar.
+                </div>
+
+                <div class="chat-bubble bubble-user">
+                  Run check suite
+                </div>
+
+                <div class="chat-bubble bubble-agent">
+                  <code>./gradlew check</code> &bull; <span style="color: var(--signal-orange);">WORKING</span>
+                </div>
+
+                <!-- Minimal Integrated Input Bar -->
+                <div class="app-input-bar">
+                  <span>Type message to agent...</span>
+                  <span class="send-pill">SEND</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Hardware Calibration Caption -->
+      <div class="mode-caption">
+        <span class="mode-tab mode-1">1. NOTHING PHONE (20:9)</span>
+        <span class="mode-tab mode-2">2. PIXEL FOLD UNFOLDED (6:5)</span>
+        <span class="mode-tab mode-3">3. DAYLIGHT COMPUTER (4:3)</span>
+      </div>
+    </div>
+
+    <!-- ORIGIN MANIFESTO SECTION (MOVED UP) -->
+    <section class="origin-manifesto">
+      <span class="manifesto-tag">ORIGIN // WHY WE BUILT SHEP</span>
+      <h2>We just want simple, reliable tools that work.</h2>
+      
+      <div class="manifesto-content">
+        <p class="manifesto-lead">
+          It is maddening how overcomplicated and fragile modern developer tools have become. Every tool tries to be an entire operating system, bundles hundreds of bloated features nobody asked for, forces you through web logins, and then fails at the one job it was actually supposed to do.
+        </p>
+
+        <p>
+          There simply wasn't a dedicated, fast remote control app for Gemini and autonomous agent swarms. We like Gemini. We use it daily. And we needed a clean, distraction-free way to steer our swarms alongside our own agent, <a href="https://underclass.tech" target="_blank" rel="noopener" style="font-weight: 800; font-family: var(--font-mono); text-decoration: underline; text-underline-offset: 4px;">_</a>, plus other agents like Codex and Claude (as long as they aren't refusing to work).
+        </p>
+
+        <p>
+          So we built SHeP: local-first, zero telemetry, zero cloud middleware. It does exactly what it says on the tin — connects to your machine over a local bridge, keeps sessions cached with 0ms latency, and lets you prompt, inspect, and unblock your swarms from any screen you have in your pocket. Tested on real daily hardware: Nothing phones, Pixel foldables, and the <a href="https://daylightcomputer.com" target="_blank" rel="noopener">Daylight Computer</a> e-paper tablet.
+        </p>
+      </div>
+    </section>
+
+    <section id="specs">
+      <div class="instrument-grid">
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 01</span>
+          <h3>Instant Warm State</h3>
+          <p>Zero latency tab switching and screen rotation. Active agent logs and output remain cached in memory for instant review without blank screens.</p>
+        </div>
+
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 02</span>
+          <h3>From Nothing to Daylight</h3>
+          <p>Clean contrast across screen types: dark minimalism for OLED phones, zero-ghosting monochrome on the Daylight Computer, and compact glanceable layouts.</p>
+        </div>
+
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 03</span>
+          <h3>Foldable Dual-Pane Architecture</h3>
+          <p>Adaptive master-detail layouts. Monitor active swarm progress in the left panel while controlling live interactive terminals on the right.</p>
+        </div>
+
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 04</span>
+          <h3>Danger Level Autonomy</h3>
+          <p>Switch between <em>0 Danger</em> (strict interactive confirmation) and <em>Dangermaxxing</em> (autonomous auto-approval on trusted agent workflows).</p>
+        </div>
+
+        <div class="instrument-cell ecosystem-unit">
+          <span class="cell-id">SUBSYSTEM // UPSTREAM</span>
+          <h3>Built on <a href="https://herdr.dev" target="_blank" rel="noopener">herdr.dev</a> Core</h3>
+          <p>Shep connects to the <strong>herdr.dev</strong> ecosystem. It interfaces with its core orchestrator and is designed to support all upcoming herdr remotes, multi-machine bridges, session multiplexing, and swarm protocol updates.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-strip">
+      <a href="/download" class="primary-btn">
+        DOWNLOAD ANDROID APK
+      </a>
+      <a href="https://github.com/dalnk/shep" class="secondary-btn" target="_blank" rel="noopener">
+        VIEW REPOSITORY
+      </a>
+    </section>
+
+    <footer>
+      <div>SHeP // SUPER HELPFUL POCKET (REMOTE)</div>
+      <div>DOMAINS: shep.work &bull; sheperd.dev &bull; sheperd.sh</div>
+    </footer>
+  </div>
+</body>
 </html>
