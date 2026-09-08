@@ -70,6 +70,25 @@
       align-items: center;
       gap: 0.5rem;
       color: var(--text-dim);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .status-indicator:hover {
+      color: #ffffff;
+    }
+
+    .download-icon-thin {
+      stroke-width: 1.5;
+      display: flex;
+      align-items: center;
+      transition: transform 0.15s ease;
+    }
+
+    .status-indicator:hover .download-icon-thin {
+      transform: translateY(1px);
+      color: var(--signal-orange);
     }
 
     .status-pip {
@@ -776,7 +795,15 @@
   <div class="frame">
     <div class="utility-strip">
       <span>ANDROID &bull; EPAPER &bull; FOLDABLES</span>
-      <span class="status-indicator"><span class="status-pip"></span>EARLY ACCESS v0.0.1 // LOCAL-FIRST</span>
+      <a href="https://github.com/dalnk/shep/releases" class="status-indicator" title="Download SHeP Android APK" target="_blank" rel="noopener">
+        <span class="status-pip"></span>
+        <span>EARLY ACCESS v0.0.1 // LOCAL-FIRST</span>
+        <svg class="download-icon-thin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </a>
     </div>
 
     <header>
@@ -890,6 +917,26 @@
       </div>
     </div>
 
+    <!-- ORIGIN MANIFESTO SECTION (MOVED UP) -->
+    <section class="origin-manifesto">
+      <span class="manifesto-tag">ORIGIN // WHY WE BUILT SHEP</span>
+      <h2>We just want simple, reliable tools that work.</h2>
+      
+      <div class="manifesto-content">
+        <p class="manifesto-lead">
+          It is maddening how overcomplicated and fragile modern developer tools have become. Every tool tries to be an entire operating system, bundles hundreds of bloated features nobody asked for, forces you through web logins, and then fails at the one job it was actually supposed to do.
+        </p>
+
+        <p>
+          There simply wasn't a dedicated, fast remote control app for Gemini and autonomous agent swarms. We like Gemini. We use it daily. And we needed a clean, distraction-free way to steer our swarms alongside our own agent, <a href="https://underclass.tech" target="_blank" rel="noopener" style="font-weight: 800; font-family: var(--font-mono); text-decoration: underline; text-underline-offset: 4px;">_</a>, plus other agents like Codex and Claude (as long as they aren't refusing to work).
+        </p>
+
+        <p>
+          So we built SHeP: local-first, zero telemetry, zero cloud middleware. It does exactly what it says on the tin — connects to your machine over a local bridge, keeps sessions cached with 0ms latency, and lets you prompt, inspect, and unblock your swarms from any screen you have in your pocket. Tested on real daily hardware: Nothing phones, Pixel foldables, and the <a href="https://daylightcomputer.com" target="_blank" rel="noopener">Daylight Computer</a> e-paper tablet.
+        </p>
+      </div>
+    </section>
+
     <section id="specs">
       <div class="instrument-grid">
         <div class="instrument-cell">
@@ -921,26 +968,6 @@
           <h3>Built on <a href="https://herdr.dev" target="_blank" rel="noopener">herdr.dev</a> Core</h3>
           <p>Shep connects to the <strong>herdr.dev</strong> ecosystem. It interfaces with its core orchestrator and is designed to support all upcoming herdr remotes, multi-machine bridges, session multiplexing, and swarm protocol updates.</p>
         </div>
-      </div>
-    </section>
-
-    <!-- ORIGIN MANIFESTO SECTION -->
-    <section class="origin-manifesto">
-      <span class="manifesto-tag">ORIGIN // WHY WE BUILT SHEP</span>
-      <h2>We just want simple, reliable tools that work.</h2>
-      
-      <div class="manifesto-content">
-        <p class="manifesto-lead">
-          It is maddening how overcomplicated and fragile modern developer tools have become. Every tool tries to be an entire operating system, bundles hundreds of bloated features nobody asked for, forces you through web logins, and then fails at the one job it was actually supposed to do.
-        </p>
-
-        <p>
-          There simply wasn't a dedicated, fast remote control app for Gemini and autonomous agent swarms. We like Gemini. We use it daily. And we needed a clean, distraction-free way to steer our swarms alongside our own agent, <a href="https://underclass.tech" target="_blank" rel="noopener" style="font-weight: 800; font-family: var(--font-mono); text-decoration: underline; text-underline-offset: 4px;">_</a>, plus other agents like Codex and Claude (as long as they aren't refusing to work).
-        </p>
-
-        <p>
-          So we built SHeP: local-first, zero telemetry, zero cloud middleware. It does exactly what it says on the tin — connects to your machine over a local bridge, keeps sessions cached with 0ms latency, and lets you prompt, inspect, and unblock your swarms from any screen you have in your pocket. Tested on real daily hardware: Nothing phones, Pixel foldables, and the <a href="https://daylightcomputer.com" target="_blank" rel="noopener">Daylight Computer</a> e-paper tablet.
-        </p>
       </div>
     </section>
 
