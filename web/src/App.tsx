@@ -5,16 +5,20 @@ import {
   Zap, 
   ChevronRight, 
   ChevronDown, 
-  Wifi,
-  WifiOff
+  Wifi, 
+  WifiOff, 
+  Terminal 
 } from 'lucide-react';
 
 interface Pane {
   id: string;
   title: string;
   agentName: string;
+  modelShortname?: string;
   state: 'WORKING' | 'BLOCKED' | 'DONE' | 'IDLE';
+  isBackground?: boolean;
   waitingDurationSeconds?: number;
+  activeAction?: string;
 }
 
 interface Message {
@@ -30,78 +34,139 @@ export function App() {
   const host = window.location.hostname || 'localhost';
   const port = '8765';
   const [connected, setConnected] = useState(false);
-  const [panes, setPanes] = useState<Pane[]>([
-    { id: '1', title: 'hurrdurr · agy', agentName: 'agy', state: 'WORKING' },
-    { id: '2', title: 'daybreak · claude', agentName: 'claude', state: 'DONE' },
-    { id: '3', title: 'underclass · under', agentName: 'under', state: 'BLOCKED', waitingDurationSeconds: 120 }
-  ]);
-  const [selectedPaneId, setSelectedPaneId] = useState<string>('1');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'm1',
-      sender: 'user',
-      text: 'Also rendering the 111 tool calls as a full width grey thing is not really my style. Can we make it minimal like Claude desktop?',
-      timestamp: Date.now() - 60000
-    },
-    {
-      id: 'm2',
-      sender: 'assistant',
-      text: "I've updated the tool call indicator to match Claude Desktop's minimal layout. Tool executions now appear as an unobtrusive inline summary with collapsible monospace details on demand.",
-      thinking: "Audit unpacked Vite bundles from /Applications/Claude.app/Contents/Resources/app.asar. Extract CSS tokens and tool summary structures.",
-      tools: [
-        'run_command: which npx',
-        'run_command: npx asar extract /Applications/Claude.app/...',
-        'view_file: /tmp/claude_unpack/.../MainWindowPage.css',
-        'replace_file_content: ChatScreen.kt'
-      ],
-      timestamp: Date.now() - 30000
-    }
-  ]);
+  const [panes, setPanes] = useState<Pane[]>([]);
+  const [selectedPaneId, setSelectedPaneId] = useState<string>('');
+  const [activeModel, setActiveModel] = useState<string>('Claude');
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [ws, setWs] = useState<WebSocket | null>(null);
 
-  // Connect to local Herdr Daemon WebSocket
+  // Connect to Herdr Daemon WebSocket
   useEffect(() => {
-    const wsUrl = `ws://${host}:${port}`;
-    const socket = new WebSocket(wsUrl);
+    let active = true;
+    let socket: WebSocket | null = null;
+    let pollTimer: any = null;
 
-    socket.onopen = () => {
-      setConnected(true);
-      socket.send(JSON.stringify({ method: 'workspace.list', id: '1' }));
-    };
+    const connect = () => {
+      const wsUrl = `ws://${host}:${port}`;
+      socket = new WebSocket(wsUrl);
 
-    socket.onclose = () => setConnected(false);
-    socket.onerror = () => setConnected(false);
+      socket.onopen = () => {
+        if (!active) return;
+        setConnected(true);
+        // Request enriched pane list
+        socket?.send(JSON.stringify({ method: 'pane.list', id: 'init-panes', params: {} }));
+        // Also subscribe to events
+        socket?.send(JSON.stringify({ method: 'events.subscribe', params: {} }));
+      };
 
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.workspaces) {
-          const extractedPanes: Pane[] = [];
-          for (const ws of data.workspaces) {
-            for (const tab of ws.tabs || []) {
-              for (const p of tab.panes || []) {
-                extractedPanes.push({
-                  id: p.pane_id,
-                  title: p.title || `Pane ${p.pane_id}`,
-                  agentName: p.agent || 'agent',
-                  state: p.agent_status === 'WORKING' ? 'WORKING' : p.agent_status === 'BLOCKED' ? 'BLOCKED' : p.agent_status === 'DONE' ? 'DONE' : 'IDLE'
-                });
-              }
+      socket.onclose = () => {
+        if (!active) return;
+        setConnected(false);
+        setTimeout(connect, 3000);
+      };
+
+      socket.onerror = () => {
+        if (!active) return;
+        setConnected(false);
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Handle pane.list response
+          if (data.id === 'init-panes' || (data.result && data.result.panes)) {
+            const rawPanes = (data.result?.panes || []) as any[];
+            const mapped: Pane[] = rawPanes.map(p => {
+              const agent = p.agent || (p.title?.toLowerCase().includes('claude') ? 'claude' :
+                                       p.title?.toLowerCase().includes('codex') ? 'codex' :
+                                       p.title?.toLowerCase().includes('grok') ? 'grok' : 'shell');
+              const statusRaw = (p.agent_status || 'idle').toUpperCase();
+              const state: 'WORKING' | 'BLOCKED' | 'DONE' | 'IDLE' = 
+                statusRaw === 'WORKING' ? 'WORKING' :
+                statusRaw === 'BLOCKED' ? 'BLOCKED' :
+                statusRaw === 'DONE' ? 'DONE' : 'IDLE';
+
+              const isBg = Boolean(
+                p.title?.toLowerCase().includes('task-') ||
+                p.title?.toLowerCase().includes('background') ||
+                p.title?.toLowerCase().includes('spoon') ||
+                p.title?.toLowerCase().includes('subagent') ||
+                p.is_background
+              );
+
+              return {
+                id: p.pane_id,
+                title: p.title || `Pane ${p.pane_id}`,
+                agentName: agent === '_' ? 'under' : agent,
+                modelShortname: p.model_shortname,
+                state,
+                isBackground: isBg,
+                waitingDurationSeconds: p.waiting_duration_seconds,
+                activeAction: p.active_action
+              };
+            });
+
+            if (mapped.length > 0) {
+              setPanes(mapped);
+              setSelectedPaneId(prev => prev && mapped.some(m => m.id === prev) ? prev : mapped[0].id);
             }
           }
-          if (extractedPanes.length > 0) {
-            setPanes(extractedPanes);
+
+          // Handle pane.transcript response
+          if (data.result && data.result.turns !== undefined) {
+            const res = data.result;
+            if (res.model_shortname) {
+              setActiveModel(res.model_shortname);
+            }
+            const turns = res.turns || [];
+            if (turns.length > 0) {
+              const msgs: Message[] = turns.map((t: any, idx: number) => ({
+                id: `turn-${idx}`,
+                sender: t.role === 'user' ? 'user' : 'assistant',
+                text: t.text || '',
+                tools: t.tools || undefined,
+                thinking: t.thinking || undefined,
+                timestamp: Date.now() - (turns.length - idx) * 5000
+              }));
+              setMessages(msgs);
+            }
           }
+        } catch (err) {
+          console.error('Failed to parse herdr frame', err);
         }
-      } catch (err) {
-        console.error('Failed to parse herdr frame', err);
-      }
+      };
+
+      setWs(socket);
     };
 
-    setWs(socket);
-    return () => socket.close();
+    connect();
+
+    // Poll pane list periodically
+    pollTimer = setInterval(() => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ method: 'pane.list', id: 'poll-panes', params: {} }));
+      }
+    }, 5000);
+
+    return () => {
+      active = false;
+      clearInterval(pollTimer);
+      socket?.close();
+    };
   }, [host, port]);
+
+  // When selected pane changes, fetch its structured transcript
+  useEffect(() => {
+    if (ws && connected && selectedPaneId) {
+      ws.send(JSON.stringify({
+        method: 'pane.transcript',
+        id: `transcript-${selectedPaneId}`,
+        params: { pane_id: selectedPaneId }
+      }));
+    }
+  }, [ws, connected, selectedPaneId]);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -112,17 +177,29 @@ export function App() {
       timestamp: Date.now()
     };
     setMessages(prev => [...prev, userMsg]);
+    const sentText = input;
     setInput('');
 
     if (ws && connected && selectedPaneId) {
       ws.send(JSON.stringify({
         method: 'pane.send_input',
-        params: { pane_id: selectedPaneId, input: input + '\n' }
+        params: { pane_id: selectedPaneId, input: sentText + '\n' }
       }));
+      // Poll transcript shortly after sending
+      setTimeout(() => {
+        ws.send(JSON.stringify({
+          method: 'pane.transcript',
+          id: `refresh-${selectedPaneId}`,
+          params: { pane_id: selectedPaneId }
+        }));
+      }, 800);
     }
   };
 
   const selectedPane = panes.find(p => p.id === selectedPaneId) || panes[0];
+
+  const mainPanes = panes.filter(p => !p.isBackground);
+  const bgPanes = panes.filter(p => p.isBackground);
 
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', background: 'var(--bg-page)' }}>
@@ -149,34 +226,42 @@ export function App() {
               padding: '2px 6px', 
               borderRadius: '4px', 
               background: 'var(--bg-surface-high)',
-              color: 'var(--text-secondary)'
+              color: 'var(--text-secondary)',
+              fontWeight: 500
             }}>WebUX</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
             {connected ? (
-              <Wifi size={16} color="var(--cds-clay)" />
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--cds-clay)', fontSize: '12px', fontWeight: 600 }}>
+                <Wifi size={15} />
+                <span>Live</span>
+              </span>
             ) : (
-              <WifiOff size={16} color="#888" />
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#888', fontSize: '12px' }}>
+                <WifiOff size={15} />
+                <span>Offline</span>
+              </span>
             )}
           </div>
         </div>
 
         {/* Panes list */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', paddingLeft: '8px' }}>
-            ACTIVE AGENTS ({panes.length})
+          {/* Main Agent Sessions */}
+          <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '8px', paddingLeft: '8px' }}>
+            AGENT SESSIONS ({mainPanes.length})
           </div>
-          {panes.map(pane => {
+          {mainPanes.map(pane => {
             const isSelected = pane.id === selectedPaneId;
             return (
               <div
                 key={pane.id}
                 onClick={() => setSelectedPaneId(pane.id)}
                 style={{
-                  padding: '10px 12px',
-                  borderRadius: '10px',
+                  padding: '9px 12px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
-                  marginBottom: '4px',
+                  marginBottom: '3px',
                   background: isSelected ? 'var(--bg-surface-high)' : 'transparent',
                   border: isSelected ? '1px solid var(--border-subtle)' : '1px solid transparent',
                   display: 'flex',
@@ -185,15 +270,16 @@ export function App() {
                 }}
               >
                 <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '6px',
                   background: isSelected ? 'var(--cds-clay)' : 'var(--bg-surface-high)',
                   color: isSelected ? '#fff' : 'var(--text-secondary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '13px'
+                  fontSize: '12px',
+                  fontWeight: 700
                 }}>
                   {pane.agentName.slice(0, 1).toUpperCase()}
                 </div>
@@ -201,16 +287,64 @@ export function App() {
                   <div style={{ fontSize: '13px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {pane.title}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    {pane.agentName} · {pane.state.toLowerCase()}
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{pane.agentName}</span>
+                    <span>·</span>
+                    <span style={{ textTransform: 'lowercase' }}>{pane.state}</span>
                   </div>
                 </div>
                 {pane.state === 'WORKING' && (
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--cds-clay)' }} />
                 )}
+                {pane.state === 'BLOCKED' && (
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eab308' }} />
+                )}
               </div>
             );
           })}
+
+          {/* Background Tasks / Subagents */}
+          {bgPanes.length > 0 && (
+            <>
+              <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--text-secondary)', marginTop: '20px', marginBottom: '8px', paddingLeft: '8px' }}>
+                BACKGROUND TASKS ({bgPanes.length})
+              </div>
+              {bgPanes.map(pane => {
+                const isSelected = pane.id === selectedPaneId;
+                return (
+                  <div
+                    key={pane.id}
+                    onClick={() => setSelectedPaneId(pane.id)}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      marginBottom: '3px',
+                      background: isSelected ? 'var(--bg-surface-high)' : 'transparent',
+                      border: isSelected ? '1px solid var(--border-subtle)' : '1px solid transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      opacity: 0.85
+                    }}
+                  >
+                    <Terminal size={16} color="var(--text-secondary)" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '12.5px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {pane.title}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>
+                        {pane.agentName} · {pane.state.toLowerCase()}
+                      </div>
+                    </div>
+                    {pane.state === 'WORKING' && (
+                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--cds-clay)' }} />
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
       </div>
 
@@ -234,9 +368,25 @@ export function App() {
           <div>
             <div style={{ fontWeight: 700, fontSize: '15px' }}>{selectedPane?.title}</div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              Connected to local session via herdr
+              Connected to {selectedPane?.agentName || 'agent'} {selectedPane?.modelShortname ? `(${selectedPane.modelShortname})` : ''} via herdr
             </div>
           </div>
+          {selectedPane?.activeAction && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              background: 'var(--bg-surface-high)',
+              color: 'var(--cds-clay)',
+              fontWeight: 500
+            }}>
+              <span className="cds-spinner" style={{ width: '10px', height: '10px', border: '2px solid var(--cds-clay)', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block', animation: 'spin 1s linear infinite' }} />
+              <span>{selectedPane.activeAction}</span>
+            </div>
+          )}
         </div>
 
         {/* Message Canvas */}
@@ -249,6 +399,12 @@ export function App() {
           alignItems: 'center'
         }}>
           <div style={{ width: '100%', maxWidth: '740px', padding: '0 24px' }}>
+            {messages.length === 0 && (
+              <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '80px', fontSize: '14px' }}>
+                <Sparkles size={24} color="var(--cds-clay)" style={{ margin: '0 auto 12px auto' }} />
+                <div>Ready for conversation with {selectedPane?.agentName || 'agent'}.</div>
+              </div>
+            )}
             {messages.map(msg => (
               <div key={msg.id} style={{ marginBottom: '32px' }}>
                 {msg.sender === 'user' ? (
@@ -269,7 +425,9 @@ export function App() {
                     {/* Agent Header */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                       <Sparkles size={16} color="var(--cds-clay)" />
-                      <span style={{ fontWeight: 600, fontSize: '13px' }}>Gemini / AGY</span>
+                      <span style={{ fontWeight: 600, fontSize: '13px' }}>
+                        {selectedPane?.modelShortname || activeModel || selectedPane?.agentName?.toUpperCase() || 'Agent'}
+                      </span>
                     </div>
 
                     {/* Thought Pill (Claude Style) */}

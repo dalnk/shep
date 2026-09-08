@@ -10,8 +10,8 @@
         android:translateY="22">
         <!-- Foldable screen frame -->
         <path
-            android:fillColor="#111216"
-            android:strokeColor="#272A30"
+            android:fillColor="#00000000"
+            android:strokeColor="#FFFFFF"
             android:strokeWidth="1.5"
             android:strokeLineCap="round"
             android:strokeLineJoin="round"
@@ -19,24 +19,24 @@
 
         <!-- Hinge / master-detail split line -->
         <path
-            android:strokeColor="#272A30"
+            android:strokeColor="#FFFFFF"
             android:strokeWidth="1.5"
             android:pathData="M13,6 L13,26" />
 
         <!-- Left pane: swarm status nodes -->
         <path
-            android:fillColor="#52525B"
+            android:fillColor="#FFFFFF"
             android:pathData="M9,11m-1.2,0a1.2,1.2 0 1,1 2.4,0a1.2,1.2 0 1,1 -2.4,0" />
         <path
-            android:fillColor="#52525B"
+            android:fillColor="#FFFFFF"
             android:pathData="M9,15m-1.2,0a1.2,1.2 0 1,1 2.4,0a1.2,1.2 0 1,1 -2.4,0" />
         <path
-            android:fillColor="#FF4400"
+            android:fillColor="#FFFFFF"
             android:pathData="M9,19m-1.2,0a1.2,1.2 0 1,1 2.4,0a1.2,1.2 0 1,1 -2.4,0" />
 
-        <!-- Right pane: orange active command bar -->
+        <!-- Right pane: command bar -->
         <path
-            android:strokeColor="#FF4400"
+            android:strokeColor="#FFFFFF"
             android:strokeWidth="2.5"
             android:strokeLineCap="round"
             android:pathData="M16,22.2 L23,22.2" />

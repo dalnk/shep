@@ -114,78 +114,25 @@ fun SettingsScreen(
             )
         }
     ) { paddingValues ->
-        BoxWithConstraints(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            val isWideLayout = maxWidth >= 700.dp
-
-            if (isWideLayout) {
-                // Wide layout: Left-biased settings (56%), right subtle anonymized work traces (44%)
-                Row(modifier = Modifier.fillMaxSize()) {
-                    Box(
-                        modifier = Modifier
-                            .weight(0.56f)
-                            .fillMaxHeight()
-                            .padding(horizontal = 24.dp)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        SettingsContent(
-                            state = state,
-                            viewModel = viewModel,
-                            darkMode = darkMode,
-                            onDarkModeChange = { darkMode = it },
-                            notifications = notifications,
-                            onNotificationsChange = { notifications = it },
-                            showManualEndpoint = showManualEndpoint,
-                            onToggleManualEndpoint = { showManualEndpoint = !showManualEndpoint },
-                            context = context,
-                            isConnected = isConnected
-                        )
-                    }
-
-                    // Elegant subtle vertical hairline separator
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                    )
-
-                    // Right side: Subtle Agent Work Traces (Matrix-like stream, refined & tasteful)
-                    Box(
-                        modifier = Modifier
-                            .weight(0.44f)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.5f))
-                            .padding(20.dp)
-                    ) {
-                        AgentWorkTracesPanel(activeAgents = state.activeAgents)
-                    }
-                }
-            } else {
-                // Mobile layout: Clean, compact Dieter Rams settings without traces
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    SettingsContent(
-                        state = state,
-                        viewModel = viewModel,
-                        darkMode = darkMode,
-                        onDarkModeChange = { darkMode = it },
-                        notifications = notifications,
-                        onNotificationsChange = { notifications = it },
-                        showManualEndpoint = showManualEndpoint,
-                        onToggleManualEndpoint = { showManualEndpoint = !showManualEndpoint },
-                        context = context,
-                        isConnected = isConnected
-                    )
-                }
-            }
+            SettingsContent(
+                state = state,
+                viewModel = viewModel,
+                darkMode = darkMode,
+                onDarkModeChange = { darkMode = it },
+                notifications = notifications,
+                onNotificationsChange = { notifications = it },
+                showManualEndpoint = showManualEndpoint,
+                onToggleManualEndpoint = { showManualEndpoint = !showManualEndpoint },
+                context = context,
+                isConnected = isConnected
+            )
         }
     }
 }
@@ -737,121 +684,5 @@ private fun CompactAutonomySegment(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-// Tasteful, non-cringe anonymized agent work traces stream (wide layouts only)
-private data class TraceLogItem(
-    val timestamp: String,
-    val agentTag: String,
-    val action: String,
-    val status: String = "ok"
-)
-
-@Composable
-private fun AgentWorkTracesPanel(activeAgents: List<String>) {
-    val sampleTraces = remember {
-        listOf(
-            TraceLogItem("01:54:12", "codex", "ast_grep: match function authenticate()"),
-            TraceLogItem("01:54:15", "claude", "analyzing diff (+24, -8) in telemetry.rs"),
-            TraceLogItem("01:54:21", "_", "tailscale ping --peer workstation.lan"),
-            TraceLogItem("01:54:28", "gemini", "prompting contextual reasoning: multi-pane rehydration"),
-            TraceLogItem("01:54:35", "codex", "cargo clippy --fix --allow-dirty"),
-            TraceLogItem("01:54:40", "claude", "synthesizing unit test suite in domain/agent"),
-            TraceLogItem("01:54:48", "_", "evaluating AST branch safety: 0 risk confirmed"),
-            TraceLogItem("01:54:55", "gemini", "reindexing workspace symbol table (1,482 symbols)"),
-            TraceLogItem("01:55:02", "codex", "git commit -m 'refactor(ui): dieter rams hairline borders'"),
-            TraceLogItem("01:55:10", "claude", "stream buffer flushed: 128 tokens/s"),
-            TraceLogItem("01:55:18", "_", "dispatching subagent worker-4 to branch test-eval"),
-            TraceLogItem("01:55:25", "gemini", "verified zero latency socket frame over iroh")
-        )
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                RoundedCornerShape(8.dp)
-            )
-            .padding(14.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                )
-                Text(
-                    text = "WORK TRACES",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Text(
-                text = "STREAMING",
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(sampleTraces) { trace ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = trace.timestamp,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                    Text(
-                        text = "[${trace.agentTag}]",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = trace.action,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
     }
 }

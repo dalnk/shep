@@ -235,6 +235,74 @@
       border-color: #434b57;
     }
 
+    /* Wide layout side-by-side hero split with subtle decorative work traces */
+    @media (min-width: 1040px) {
+      .frame {
+        max-width: 1160px;
+      }
+      .hero-split-container {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 2.5rem;
+        align-items: start;
+        margin-bottom: 2rem;
+      }
+      .hero-traces-column {
+        display: block !important;
+      }
+    }
+
+    .hero-traces-column {
+      display: none;
+      background: #08090b;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-traces-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border-dark);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .hero-traces-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .trace-item {
+      display: flex;
+      gap: 0.65rem;
+      line-height: 1.45;
+    }
+
+    .trace-time {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .trace-agent {
+      color: var(--signal-orange);
+      font-weight: 700;
+    }
+
+    .trace-action {
+      color: var(--text-dim);
+    }
+
     /* ========================================================= */
     /* CLEAN ADAPTIVE HARDWARE SHOWCASE (NEUTRAL VERTICAL FLOW)  */
     /* ========================================================= */
@@ -831,20 +899,69 @@
     </header>
 
     <section class="hero">
-      <span class="index-mark">01 // SUPER HELPFUL POCKET (REMOTE)</span>
-      <h1>Work remote, shep</h1>
-      <p class="lead">
-        A fast, battery-light Android companion for remote work with your coding agent swarms. Zero cloud dependency, zero telemetry, instant warm session rehydration.
-      </p>
+      <div class="hero-split-container">
+        <div class="hero-copy-column">
+          <span class="index-mark">01 // SUPER HELPFUL POCKET (REMOTE)</span>
+          <h1>Work remote, shep</h1>
+          <p class="lead">
+            A fast, battery-light Android companion for remote work with your coding agent swarms. Zero cloud dependency, zero telemetry, instant warm session rehydration.
+          </p>
 
-      <div class="console-module" id="install">
-        <div class="module-bar">
-          <span>HOST INSTALLATION SCRIPT</span>
-          <span>CURL / BASH INTERFACE</span>
+          <div class="console-module" id="install">
+            <div class="module-bar">
+              <span>HOST INSTALLATION SCRIPT</span>
+              <span>CURL / BASH INTERFACE</span>
+            </div>
+            <div class="command-strip">
+              <code>curl -fsSL https://sheperd.sh | sh</code>
+              <button class="action-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://sheperd.sh | sh'); this.innerText='COPIED!'">COPY COMMAND</button>
+            </div>
+          </div>
         </div>
-        <div class="command-strip">
-          <code>curl -fsSL https://sheperd.sh | sh</code>
-          <button class="action-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://sheperd.sh | sh'); this.innerText='COPIED!'">COPY COMMAND</button>
+
+        <!-- Wide-only decorative work traces (matrix aesthetic, tasteful & quiet) -->
+        <div class="hero-traces-column" aria-hidden="true">
+          <div class="hero-traces-header">
+            <span>LIVE SWARM TELEMETRY</span>
+            <span style="color: var(--signal-orange);">STREAMING</span>
+          </div>
+          <div class="hero-traces-list">
+            <div class="trace-item">
+              <span class="trace-time">02:14:12</span>
+              <span class="trace-agent">[codex]</span>
+              <span class="trace-action">ast_grep: match function authenticate()</span>
+            </div>
+            <div class="trace-item">
+              <span class="trace-time">02:14:18</span>
+              <span class="trace-agent">[claude]</span>
+              <span class="trace-action">synthesize unit test suite in domain/agent</span>
+            </div>
+            <div class="trace-item">
+              <span class="trace-time">02:14:25</span>
+              <span class="trace-agent">[_]</span>
+              <span class="trace-action">tailscale ping --peer workstation.lan</span>
+            </div>
+            <div class="trace-item">
+              <span class="trace-time">02:14:32</span>
+              <span class="trace-agent">[gemini]</span>
+              <span class="trace-action">contextual reasoning: multi-pane rehydration</span>
+            </div>
+            <div class="trace-item">
+              <span class="trace-time">02:14:39</span>
+              <span class="trace-agent">[codex]</span>
+              <span class="trace-action">cargo clippy --fix --allow-dirty</span>
+            </div>
+            <div class="trace-item">
+              <span class="trace-time">02:14:48</span>
+              <span class="trace-agent">[_]</span>
+              <span class="trace-action">ast safety verification: 0 risk confirmed</span>
+            </div>
+            <div class="trace-item">
+              <span class="trace-time">02:14:55</span>
+              <span class="trace-agent">[gemini]</span>
+              <span class="trace-action">reindexing symbol table (1,482 symbols)</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

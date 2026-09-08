@@ -24,7 +24,9 @@ server (herdr serve --port N or similar), this bridge goes away.
 from __future__ import annotations
 
 import argparse
+import base64
 import glob
+import hashlib
 import json
 import logging
 import os
@@ -32,6 +34,7 @@ import re
 import select
 import signal
 import socket
+import struct
 import sys
 import threading
 import time
@@ -1113,7 +1116,7 @@ class Upstream:
 
 
 class Client:
-    """One TCP connection from a phone app."""
+    """One TCP or WebSocket connection from a phone app or web client."""
 
     def __init__(self, sock: socket.socket, addr, upstream: Upstream):
         self._sock = sock
@@ -1122,6 +1125,7 @@ class Client:
         self._read_buf = b""
         self._write_lock = threading.Lock()
         self._closed = threading.Event()
+        self._is_websocket = False
 
     def serve(self) -> None:
         """Drive this client until it disconnects or errors."""
@@ -1138,21 +1142,110 @@ class Client:
                     log.info("client %s disconnected", self._addr)
                     return
                 self._read_buf += data
-                while b"\n" in self._read_buf:
-                    line, _, self._read_buf = self._read_buf.partition(b"\n")
-                    if not line.strip():
-                        continue
-                    self._handle_line(line)
+
+                # Check if this is an incoming HTTP Upgrade / WebSocket connection
+                if not self._is_websocket and b"\r\n\r\n" in self._read_buf:
+                    header_part, _, remaining = self._read_buf.partition(b"\r\n\r\n")
+                    header_text = header_part.decode("utf-8", errors="ignore")
+                    if "Upgrade: websocket" in header_text or "upgrade: websocket" in header_text:
+                        match = re.search(r"Sec-WebSocket-Key:\s*([^\r\n]+)", header_text, re.I)
+                        if match:
+                            key = match.group(1).strip()
+                            guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+                            accept = base64.b64encode(hashlib.sha1((key + guid).encode()).digest()).decode()
+                            response = (
+                                "HTTP/1.1 101 Switching Protocols\r\n"
+                                "Upgrade: websocket\r\n"
+                                "Connection: Upgrade\r\n"
+                                f"Sec-WebSocket-Accept: {accept}\r\n\r\n"
+                            ).encode()
+                            with self._write_lock:
+                                self._sock.sendall(response)
+                            self._is_websocket = True
+                            self._read_buf = remaining
+                            log.info("client %s upgraded to WebSocket", self._addr)
+                            continue
+
+                if self._is_websocket:
+                    # Parse WebSocket frames (RFC 6455)
+                    while len(self._read_buf) >= 2:
+                        b1 = self._read_buf[0]
+                        b2 = self._read_buf[1]
+                        opcode = b1 & 0x0F
+                        is_masked = bool(b2 & 0x80)
+                        payload_len = b2 & 0x7F
+                        offset = 2
+
+                        if payload_len == 126:
+                            if len(self._read_buf) < 4:
+                                break
+                            payload_len = struct.unpack("!H", self._read_buf[2:4])[0]
+                            offset = 4
+                        elif payload_len == 127:
+                            if len(self._read_buf) < 10:
+                                break
+                            payload_len = struct.unpack("!Q", self._read_buf[2:10])[0]
+                            offset = 10
+
+                        mask_size = 4 if is_masked else 0
+                        total_needed = offset + mask_size + payload_len
+                        if len(self._read_buf) < total_needed:
+                            break
+
+                        mask_key = self._read_buf[offset:offset+4] if is_masked else b""
+                        raw_payload = self._read_buf[offset+mask_size:total_needed]
+                        self._read_buf = self._read_buf[total_needed:]
+
+                        if is_masked:
+                            unmasked = bytearray(len(raw_payload))
+                            for i, b in enumerate(raw_payload):
+                                unmasked[i] = b ^ mask_key[i % 4]
+                            payload_bytes = bytes(unmasked)
+                        else:
+                            payload_bytes = raw_payload
+
+                        if opcode == 0x8:  # Close
+                            self._closed.set()
+                            return
+                        elif opcode == 0x9:  # Ping
+                            pong = self._make_ws_frame(0xA, payload_bytes)
+                            with self._write_lock:
+                                self._sock.sendall(pong)
+                        elif opcode in (0x1, 0x2):  # Text or binary
+                            self._handle_line(payload_bytes)
+                else:
+                    # Standard NDJSON line stream (Android app)
+                    while b"\n" in self._read_buf:
+                        line, _, self._read_buf = self._read_buf.partition(b"\n")
+                        if not line.strip():
+                            continue
+                        self._handle_line(line)
         finally:
             self._upstream.detach(self)
             self.close()
 
+    def _make_ws_frame(self, opcode: int, payload: bytes) -> bytes:
+        length = len(payload)
+        header = bytearray([0x80 | (opcode & 0x0F)])
+        if length <= 125:
+            header.append(length)
+        elif length <= 65535:
+            header.append(126)
+            header.extend(struct.pack("!H", length))
+        else:
+            header.append(127)
+            header.extend(struct.pack("!Q", length))
+        return bytes(header) + payload
+
     def send_event(self, frame: dict) -> None:
         """Send a server-pushed event frame to this client."""
-        line = (json.dumps(frame, separators=(",", ":")) + "\n").encode()
+        raw_json = json.dumps(frame, separators=(",", ":"))
         with self._write_lock:
             try:
-                self._sock.sendall(line)
+                if self._is_websocket:
+                    self._sock.sendall(self._make_ws_frame(0x1, raw_json.encode("utf-8")))
+                else:
+                    self._sock.sendall((raw_json + "\n").encode("utf-8"))
             except OSError as exc:
                 log.info("client %s write error: %s", self._addr, exc)
                 self._closed.set()
@@ -1216,10 +1309,13 @@ class Client:
                 self._send_error(client_id, "upstream_error", str(exc))
 
     def _send_response(self, response: dict) -> None:
-        line = (json.dumps(response, separators=(",", ":")) + "\n").encode()
+        raw_json = json.dumps(response, separators=(",", ":"))
         with self._write_lock:
             try:
-                self._sock.sendall(line)
+                if self._is_websocket:
+                    self._sock.sendall(self._make_ws_frame(0x1, raw_json.encode("utf-8")))
+                else:
+                    self._sock.sendall((raw_json + "\n").encode("utf-8"))
             except OSError as exc:
                 log.info("client %s write error: %s", self._addr, exc)
                 self._closed.set()
