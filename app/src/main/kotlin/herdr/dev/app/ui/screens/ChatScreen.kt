@@ -40,9 +40,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -345,7 +347,7 @@ private fun ChatBubble(
                 }
             }
 
-            // 2. Structured Tools (or parsed terminal tools)
+            // 2. Structured Tools (or parsed terminal tools) - Claude Desktop style summary
             val allTools = if (isTerminal) {
                 val parsed = remember(message.text) {
                     herdr.dev.app.ui.util.TerminalOutputParser.parse(message.text)
@@ -357,42 +359,90 @@ private fun ChatBubble(
 
             if (allTools.isNotEmpty()) {
                 var toolsExpanded by remember { mutableStateOf(false) }
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                        .clickable { toolsExpanded = !toolsExpanded }
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "⚡ ${allTools.size} tool call${if (allTools.size > 1) "s" else ""}",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = if (toolsExpanded) "▾ hide" else "▸ show details",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (toolsExpanded) {
-                            Spacer(modifier = Modifier.height(6.dp))
-                            for (tool in allTools.takeLast(10)) {
-                                Text(
-                                    text = tool,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(vertical = 2.dp)
-                                )
+
+                // Summarize tool calls like Claude Desktop ("Ran 4 commands", "Viewed 3 files, edited 1 file", etc.)
+                val summaryText = remember(allTools) {
+                    val counts = mutableMapOf<String, Int>()
+                    for (tool in allTools) {
+                        val t = tool.trim().removePrefix("●").removePrefix("•").removePrefix("*").trim()
+                        val category = when {
+                            t.startsWith("run_command", ignoreCase = true) || t.startsWith("Running command", ignoreCase = true) -> "command"
+                            t.startsWith("view_file", ignoreCase = true) || t.startsWith("Viewing file", ignoreCase = true) -> "read file"
+                            t.startsWith("replace_file_content", ignoreCase = true) || t.startsWith("Editing file", ignoreCase = true) || t.startsWith("write_to_file", ignoreCase = true) -> "edit file"
+                            t.startsWith("grep_search", ignoreCase = true) || t.startsWith("find_by_name", ignoreCase = true) || t.startsWith("list_dir", ignoreCase = true) -> "search"
+                            t.startsWith("search_web", ignoreCase = true) || t.startsWith("read_url", ignoreCase = true) -> "web search"
+                            else -> {
+                                val firstWord = t.substringBefore('(').substringBefore(':').substringBefore(' ').trim().lowercase()
+                                if (firstWord.isNotBlank() && firstWord.length < 25) firstWord else "tool"
                             }
+                        }
+                        counts[category] = (counts[category] ?: 0) + 1
+                    }
+
+                    if (counts.size == 1) {
+                        val (cat, count) = counts.entries.first()
+                        when (cat) {
+                            "command" -> "Ran $count command${if (count > 1) "s" else ""}"
+                            "read file" -> "Read $count file${if (count > 1) "s" else ""}"
+                            "edit file" -> "Edited $count file${if (count > 1) "s" else ""}"
+                            "search" -> "Searched $count time${if (count > 1) "s" else ""}"
+                            "web search" -> "Searched web $count time${if (count > 1) "s" else ""}"
+                            else -> "Used $cat $count time${if (count > 1) "s" else ""}"
+                        }
+                    } else {
+                        // Multi-action summary
+                        val parts = counts.entries.map { (cat, count) ->
+                            when (cat) {
+                                "command" -> "$count cmd${if (count > 1) "s" else ""}"
+                                "read file" -> "$count read${if (count > 1) "s" else ""}"
+                                "edit file" -> "$count edit${if (count > 1) "s" else ""}"
+                                "search" -> "$count search${if (count > 1) "es" else ""}"
+                                else -> "$count $cat"
+                            }
+                        }
+                        "${allTools.size} tool calls (${parts.take(3).joinToString(", ")})"
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(bottom = 6.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { toolsExpanded = !toolsExpanded }
+                        .padding(vertical = 3.dp, horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Bolt,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Text(
+                        text = summaryText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                    )
+                    Text(
+                        text = if (toolsExpanded) "▾" else "▸",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+                if (toolsExpanded) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, bottom = 8.dp)
+                    ) {
+                        for (tool in allTools.takeLast(15)) {
+                            Text(
+                                text = tool,
+                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+                                modifier = Modifier.padding(vertical = 1.dp)
+                            )
                         }
                     }
                 }

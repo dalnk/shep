@@ -57,11 +57,12 @@ fun HomeScreen(
 
     val dismissedTaskIds by viewModel.dismissedTaskIds.collectAsStateWithLifecycle()
 
+    val query = askAnythingText.trim().lowercase()
+
     val allPanes = remember(workspaces) {
         workspaces.flatMap { it.tabs }.flatMap { it.panes }.distinctBy { it.id }
     }
 
-    val query = askAnythingText.trim().lowercase()
     val filteredPanes = remember(allPanes, query) {
         if (query.isBlank()) allPanes
         else allPanes.filter {
@@ -119,8 +120,8 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(4.dp))
@@ -263,7 +264,11 @@ fun HomeScreen(
                 }
 
                 if (!isAttentionInboxCollapsed) {
-                    items(attentionPanes, key = { "inbox-attn-${it.id}" }) { pane ->
+                    items(
+                        items = attentionPanes,
+                        key = { "inbox-attn-${it.id}" },
+                        contentType = { "attn_pane" }
+                    ) { pane ->
                         PausedAgentInboxCard(
                             pane = pane,
                             dangerLevel = dangerLevel,
@@ -319,7 +324,11 @@ fun HomeScreen(
                 }
 
                 if (!isDoneInboxCollapsed) {
-                    items(donePanes, key = { "inbox-done-${it.id}" }) { pane ->
+                    items(
+                        items = donePanes,
+                        key = { "inbox-done-${it.id}" },
+                        contentType = { "done_pane" }
+                    ) { pane ->
                         DoneAgentInboxCard(
                             pane = pane,
                             onOpenChat = { onNavigateToChat(pane.id) },
@@ -358,7 +367,11 @@ fun HomeScreen(
                     }
                 }
 
-                items(activePanes, key = { it.id }) { pane ->
+                items(
+                    items = activePanes,
+                    key = { it.id },
+                    contentType = { "active_pane" }
+                ) { pane ->
                     ActiveAgentCard(
                         pane = pane, 
                         isSelected = (pane.id == selectedPaneId),
@@ -398,7 +411,7 @@ private fun PausedAgentInboxCard(
     onOpenChat: () -> Unit,
     onQuickAction: (String) -> Unit,
 ) {
-    val waitingStr = formatDuration(pane.waitingDurationSeconds)
+    val waitingStr = remember(pane.waitingDurationSeconds) { formatDuration(pane.waitingDurationSeconds) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -406,8 +419,8 @@ private fun PausedAgentInboxCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = when (dangerLevel) {
-                herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.25f)
-                else -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f)
+                herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.tertiaryContainer
+                else -> MaterialTheme.colorScheme.errorContainer
             }
         ),
         border = CardDefaults.outlinedCardBorder()
@@ -423,22 +436,27 @@ private fun PausedAgentInboxCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Surface(
-                    modifier = Modifier.size(36.dp),
-                    shape = CircleShape,
-                    color = when (dangerLevel) {
-                        herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.tertiaryContainer
-                        else -> MaterialTheme.colorScheme.errorContainer
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(
+                            when (dangerLevel) {
+                                herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.tertiary
+                                else -> MaterialTheme.colorScheme.error
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            if (dangerLevel == herdr.dev.app.data.DangerLevel.DANGERMAXXING) Icons.Default.Bolt else Icons.Default.PauseCircleFilled,
-                            contentDescription = "Paused",
-                            tint = if (dangerLevel == herdr.dev.app.data.DangerLevel.DANGERMAXXING) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    Icon(
+                        if (dangerLevel == herdr.dev.app.data.DangerLevel.DANGERMAXXING) Icons.Default.Bolt else Icons.Default.PauseCircleFilled,
+                        contentDescription = "Paused",
+                        tint = when (dangerLevel) {
+                            herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.onTertiary
+                            else -> MaterialTheme.colorScheme.onError
+                        },
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -505,7 +523,7 @@ private fun DoneAgentInboxCard(
     onOpenChat: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val waitingStr = formatDuration(pane.waitingDurationSeconds)
+    val waitingStr = remember(pane.waitingDurationSeconds) { formatDuration(pane.waitingDurationSeconds) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -541,21 +559,20 @@ private fun DoneAgentInboxCard(
                 )
             }
             // MD3 paper-outlined subtle X button in top corner
-            Surface(
-                onClick = onDismiss,
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                modifier = Modifier.size(30.dp)
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clickable(onClick = onDismiss),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Dismiss task",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Dismiss task",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
@@ -567,31 +584,31 @@ fun AgentAvatar(
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
 ) {
-    val a = agentName.trim().lowercase()
-    val (icon, label) = when {
-        a in listOf("agy", "gemini") -> Icons.Default.AutoAwesome to "Gemini"
-        a == "codex" -> Icons.Default.Terminal to "Codex"
-        a == "claude" -> Icons.Default.Stars to "Claude"
-        a == "copilot" -> Icons.Default.Code to "Copilot"
-        a == "grok" -> Icons.Default.Bolt to "Grok"
-        a in listOf("under", "_") -> Icons.Default.Psychology to "Under"
-        else -> Icons.Default.Computer to a.take(1).uppercase()
+    val a = remember(agentName) { agentName.trim().lowercase() }
+    val (icon, label) = remember(a) {
+        when {
+            a in listOf("agy", "gemini") -> Icons.Default.AutoAwesome to "Gemini"
+            a == "codex" -> Icons.Default.Terminal to "Codex"
+            a == "claude" -> Icons.Default.Stars to "Claude"
+            a == "copilot" -> Icons.Default.Code to "Copilot"
+            a == "grok" -> Icons.Default.Bolt to "Grok"
+            a in listOf("under", "_") -> Icons.Default.Psychology to "Under"
+            else -> Icons.Default.Computer to a.take(1).uppercase()
+        }
     }
 
-    Surface(
-        modifier = modifier.size(40.dp),
-        shape = CircleShape,
-        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
@@ -601,15 +618,15 @@ private fun QuickAction(icon: ImageVector, label: String, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(4.dp)
     ) {
-        Surface(
-            onClick = onClick,
-            modifier = Modifier.size(56.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.secondaryContainer
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.onSecondaryContainer)
-            }
+            Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.onSecondaryContainer)
         }
         Text(
             text = label,
@@ -620,7 +637,6 @@ private fun QuickAction(icon: ImageVector, label: String, onClick: () -> Unit) {
         )
     }
 }
-
 
 @Composable
 private fun ActiveAgentCard(
@@ -649,6 +665,7 @@ private fun ActiveAgentCard(
             AgentAvatar(
                 agentName = pane.agentName,
                 isSelected = isSelected,
+                modifier = Modifier.size(40.dp)
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(pane.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
