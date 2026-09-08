@@ -3,7 +3,7 @@ export async function onRequest(context) {
   const userAgent = (request.headers.get("user-agent") || "").toLowerCase();
   const url = new URL(request.url);
 
-  // If request is made via curl, wget, or bash (or path is /install.sh, /sheperd.sh, /shepherd.sh, /shep.sh), serve the shell installer script directly
+  // If request is made via curl, wget, or bash (or path is /install.sh, /shep.sh, or legacy aliases), serve the shell installer script directly
   if (
     url.pathname === "/install.sh" ||
     url.pathname === "/sheperd.sh" ||

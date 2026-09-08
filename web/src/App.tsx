@@ -17,9 +17,7 @@ import {
   Copy,
   Check,
   X,
-  Smartphone,
-  ArrowUpRight,
-  Cloud
+  Smartphone
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -1498,32 +1496,16 @@ interface PairingModalProps {
 }
 
 function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: PairingModalProps) {
-  const [activeTab, setActiveTab] = useState<'quick' | 'tailscale' | 'cloud' | 'android'>('quick');
   const [inputHost, setInputHost] = useState(host);
   const [inputPort, setInputPort] = useState(port);
-  const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
-  const [copiedInstallCmd, setCopiedInstallCmd] = useState(false);
 
-  // Detect current origin
-  const origin = window.location.origin;
-  const webPairUrl = `${origin}/?h=${encodeURIComponent(inputHost)}&p=${encodeURIComponent(inputPort)}`;
-  const androidDeepLink = `shep://pair?host=${encodeURIComponent(inputHost)}&port=${encodeURIComponent(inputPort)}`;
-  const bridgeCmd = `python3 bridge/herdr-bridge.py`;
-  const installCmd = `curl -fsSL https://sheperd.sh | sh`;
+  const installCmd = `curl -fsSL https://shep.sh | sh`;
 
-  const copyToClipboard = (text: string, type: 'link' | 'cmd' | 'install') => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    if (type === 'link') {
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    } else if (type === 'install') {
-      setCopiedInstallCmd(true);
-      setTimeout(() => setCopiedInstallCmd(false), 2000);
-    } else {
-      setCopiedCmd(true);
-      setTimeout(() => setCopiedCmd(false), 2000);
-    }
+    setCopiedCmd(true);
+    setTimeout(() => setCopiedCmd(false), 2000);
   };
 
   return (
@@ -1546,14 +1528,13 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
         borderRadius: '16px',
         border: '1px solid var(--border-subtle)',
         width: '100%',
-        maxWidth: '560px',
-        maxHeight: '90vh',
+        maxWidth: '440px',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)'
       }}>
-        {/* Modal Header */}
+        {/* Header */}
         <div style={{
           padding: '18px 24px',
           borderBottom: '1px solid var(--border-subtle)',
@@ -1567,17 +1548,19 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              background: 'rgba(217, 119, 87, 0.15)',
+              background: connected ? 'rgba(34, 197, 94, 0.15)' : 'rgba(217, 119, 87, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <Sparkles size={18} color="var(--cds-clay)" />
+              {connected ? <Wifi size={18} color="#22c55e" /> : <WifiOff size={18} color="var(--cds-clay)" />}
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '15px' }}>Shep Setup & Pairing</div>
+              <div style={{ fontWeight: 700, fontSize: '15px' }}>
+                {connected ? 'Connected' : 'Connect to Shep'}
+              </div>
               <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>
-                Connect this interface to your workstation or cloud runner
+                {connected ? `${host}:${port}` : 'Point this app at your workstation'}
               </div>
             </div>
           </div>
@@ -1596,437 +1579,132 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--border-subtle)',
-          padding: '0 24px',
-          background: 'var(--bg-surface)'
-        }}>
-          <button
-            onClick={() => setActiveTab('quick')}
-            style={{
-              padding: '12px 14px',
-              fontSize: '12.5px',
-              fontWeight: 600,
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'quick' ? '2px solid var(--cds-clay)' : '2px solid transparent',
-              color: activeTab === 'quick' ? 'var(--cds-clay)' : 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-          >
-            1. Quick Connect
-          </button>
-          <button
-            onClick={() => setActiveTab('cloud')}
-            style={{
-              padding: '12px 14px',
-              fontSize: '12.5px',
-              fontWeight: 600,
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'cloud' ? '2px solid var(--cds-clay)' : '2px solid transparent',
-              color: activeTab === 'cloud' ? 'var(--cds-clay)' : 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-          >
-            2. Cloud Account
-          </button>
-          <button
-            onClick={() => setActiveTab('tailscale')}
-            style={{
-              padding: '12px 14px',
-              fontSize: '12.5px',
-              fontWeight: 600,
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'tailscale' ? '2px solid var(--cds-clay)' : '2px solid transparent',
-              color: activeTab === 'tailscale' ? 'var(--cds-clay)' : 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-          >
-            3. Tailscale
-          </button>
-          <button
-            onClick={() => setActiveTab('android')}
-            style={{
-              padding: '12px 14px',
-              fontSize: '12.5px',
-              fontWeight: 600,
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === 'android' ? '2px solid var(--cds-clay)' : '2px solid transparent',
-              color: activeTab === 'android' ? 'var(--cds-clay)' : 'var(--text-secondary)',
-              cursor: 'pointer'
-            }}
-          >
-            4. Android App
-          </button>
-        </div>
-
-        {/* Modal Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-          {activeTab === 'quick' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              {/* Step 1 */}
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--cds-clay)', marginBottom: '4px' }}>
-                  STEP 1: START OR INSTALL HERDR & BRIDGE
-                </div>
-                <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  If you have the repository cloned, run:
-                </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: '#121212',
-                  padding: '10px 14px',
+        {/* Content */}
+        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Host & Port */}
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Workstation
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                value={inputHost}
+                onChange={e => setInputHost(e.target.value)}
+                placeholder="IP, hostname, or Tailscale name"
+                onKeyDown={e => { if (e.key === 'Enter') onSaveHost(inputHost, inputPort); }}
+                style={{
+                  flex: 3,
+                  padding: '10px 12px',
                   borderRadius: '8px',
-                  fontFamily: 'var(--cds-font-mono)',
-                  fontSize: '12.5px',
-                  color: '#e4e4e7',
-                  border: '1px solid var(--border-subtle)',
-                  marginBottom: '10px'
-                }}>
-                  <code>{bridgeCmd}</code>
-                  <button
-                    onClick={() => copyToClipboard(bridgeCmd, 'cmd')}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '11px'
-                    }}
-                  >
-                    {copiedCmd ? <Check size={14} color="var(--cds-clay)" /> : <Copy size={14} />}
-                    <span>{copiedCmd ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
-
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Don't have herdr yet? Run the automated 1-line installer (installs herdr + bridge):
-                </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  background: '#121212',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  fontFamily: 'var(--cds-font-mono)',
-                  fontSize: '12px',
-                  color: '#38bdf8',
-                  border: '1px solid var(--border-subtle)'
-                }}>
-                  <code>{installCmd}</code>
-                  <button
-                    onClick={() => copyToClipboard(installCmd, 'install')}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '11px'
-                    }}
-                  >
-                    {copiedInstallCmd ? <Check size={14} color="#38bdf8" /> : <Copy size={14} />}
-                    <span>{copiedInstallCmd ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Step 2: Configure Host & Port */}
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--cds-clay)', marginBottom: '4px' }}>
-                  STEP 2: WORKSTATION IP / HOSTNAME
-                </div>
-                <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  Use <code>localhost</code>, your local network IP (e.g. <code>192.168.1.x</code>), or Tailscale host:
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    value={inputHost}
-                    onChange={e => setInputHost(e.target.value)}
-                    placeholder="localhost or IP / MagicDNS"
-                    style={{
-                      flex: 3,
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      background: 'var(--bg-surface-high)',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-primary)',
-                      fontSize: '13px',
-                      fontFamily: 'var(--cds-font-mono)'
-                    }}
-                  />
-                  <input
-                    type="text"
-                    value={inputPort}
-                    onChange={e => setInputPort(e.target.value)}
-                    placeholder="8765"
-                    style={{
-                      flex: 1,
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      background: 'var(--bg-surface-high)',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-primary)',
-                      fontSize: '13px',
-                      fontFamily: 'var(--cds-font-mono)'
-                    }}
-                  />
-                  <button
-                    onClick={() => onSaveHost(inputHost, inputPort)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      background: 'var(--cds-clay)',
-                      color: '#fff',
-                      border: 'none',
-                      fontSize: '12.5px',
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
-
-              {/* Step 3: 1-Click Link */}
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--cds-clay)', marginBottom: '4px' }}>
-                  STEP 3: 1-CLICK BOOKMARKABLE URL
-                </div>
-                <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                  Share this link or open it anywhere to auto-pair instantly:
-                </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
                   background: 'var(--bg-surface-high)',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
                   border: '1px solid var(--border-subtle)',
-                  fontSize: '11.5px',
                   color: 'var(--text-primary)',
-                  overflow: 'hidden'
-                }}>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px' }}>
-                    {webPairUrl}
-                  </span>
-                  <button
-                    onClick={() => copyToClipboard(webPairUrl, 'link')}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--cds-clay)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '11.5px',
-                      fontWeight: 600,
-                      flexShrink: 0
-                    }}
-                  >
-                    {copiedLink ? <Check size={13} /> : <Copy size={13} />}
-                    <span>{copiedLink ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'cloud' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px', lineHeight: '1.6' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Cloud size={18} color="var(--cds-clay)" />
-                <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
-                  Pairing with Herdr / Shep Cloud
-                </span>
-              </div>
-
-              <div style={{ color: 'var(--text-secondary)' }}>
-                You can try your cloud runners and remote boxes through Shep immediately. Herdr runs headless on your cloud servers, EC2, VPS, or remote machines, and relays sessions directly to your browser.
-              </div>
-
-              <div style={{
-                background: 'var(--bg-surface-high)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '10px',
-                padding: '14px'
-              }}>
-                <div style={{ fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
-                  How to link your remote or cloud server:
-                </div>
-                <ol style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-secondary)', fontSize: '12.5px', lineHeight: '1.6' }}>
-                  <li>SSH into your cloud server or VM.</li>
-                  <li>Run the 1-liner installer: <code>curl -fsSL https://sheperd.sh | sh</code> (auto-installs herdr and bridge).</li>
-                  <li>Copy the 1-click pairing URL output by the bridge (e.g. <code>https://shep.work/?h=your-cloud-ip&p=8765</code>).</li>
-                  <li>Paste your cloud host / DNS into the Quick Connect tab, or open the link directly!</li>
-                </ol>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                background: '#121212',
-                padding: '12px 14px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)'
-              }}>
-                <div style={{ fontSize: '11px', color: '#888', fontWeight: 600 }}>CONNECT VIA SSH / REMOTE HERDR</div>
-                <div style={{ fontFamily: 'var(--cds-font-mono)', fontSize: '12px', color: '#e4e4e7' }}>
-                  herdr --remote user@your-cloud-box
-                </div>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                background: 'rgba(217, 119, 87, 0.08)',
-                color: 'var(--cds-clay)',
-                fontSize: '12px'
-              }}>
-                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-                <span>Zero vendor lock-in: work directly with your own cloud VPS, AWS, or local workstations.</span>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'tailscale' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px', lineHeight: '1.6' }}>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                Zero-Configuration Remote Access with Tailscale & Tailcat
-              </div>
-              <div style={{ color: 'var(--text-secondary)' }}>
-                Tailscale gives your devices secure encrypted mesh IPs. Tailcat lets you link directly without port forwarding or exposing your workstation to the public internet.
-              </div>
-
-              <div style={{
-                background: 'var(--bg-surface-high)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '10px',
-                padding: '14px'
-              }}>
-                <div style={{ fontWeight: 600, marginBottom: '6px' }}>How to connect via Tailscale MagicDNS:</div>
-                <ol style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-secondary)', fontSize: '12.5px' }}>
-                  <li>Make sure Tailscale is active on your host machine and your mobile device/laptop.</li>
-                  <li>Check your machine's MagicDNS name (e.g. <code>my-macbook.tailnet.ts.net</code> or <code>100.x.y.z</code>).</li>
-                  <li>In the Quick Connect tab, set Host to that MagicDNS name or 100.x IP.</li>
-                  <li>Cloud Shep (<code>https://shep.work</code>) will connect directly over your secure mesh tunnel!</li>
-                </ol>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                background: 'rgba(217, 119, 87, 0.08)',
-                color: 'var(--cds-clay)',
-                fontSize: '12px'
-              }}>
-                <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
-                <span>Shep never proxies your code through any central servers — everything stays strictly peer-to-peer.</span>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'android' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px', lineHeight: '1.6' }}>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                1-Tap Android App Pairing
-              </div>
-              <div style={{ color: 'var(--text-secondary)' }}>
-                The HurrDurr Android companion app supports native deep linking. Opening the pairing link automatically configures the daemon host, port, and initiates real-time monitoring.
-              </div>
-
-              <div style={{
-                background: 'var(--bg-surface-high)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '10px',
-                padding: '14px'
-              }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  ANDROID DEEP LINK
-                </div>
-                <div style={{
+                  fontSize: '13px',
                   fontFamily: 'var(--cds-font-mono)',
-                  fontSize: '12px',
+                  outline: 'none'
+                }}
+              />
+              <input
+                type="text"
+                value={inputPort}
+                onChange={e => setInputPort(e.target.value)}
+                placeholder="8765"
+                onKeyDown={e => { if (e.key === 'Enter') onSaveHost(inputHost, inputPort); }}
+                style={{
+                  width: '70px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  background: 'var(--bg-surface-high)',
+                  border: '1px solid var(--border-subtle)',
                   color: 'var(--text-primary)',
-                  marginBottom: '10px',
-                  wordBreak: 'break-all'
-                }}>
-                  {androidDeepLink}
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => copyToClipboard(androidDeepLink, 'link')}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      background: 'var(--cds-clay)',
-                      color: '#fff',
-                      border: 'none',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}
-                  >
-                    {copiedLink ? <Check size={13} /> : <Copy size={13} />}
-                    <span>{copiedLink ? 'Copied Deep Link' : 'Copy Deep Link'}</span>
-                  </button>
-                  <a
-                    href={androidDeepLink}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      background: 'transparent',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-primary)',
-                      textDecoration: 'none',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}
-                  >
-                    <span>Launch on Android</span>
-                    <ExternalLink size={12} />
-                  </a>
-                </div>
-              </div>
-
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                Tip: You can send this link to your phone via Slack, Telegram, or Notes, then tap it once to connect instantly.
-              </div>
+                  fontSize: '13px',
+                  fontFamily: 'var(--cds-font-mono)',
+                  textAlign: 'center',
+                  outline: 'none'
+                }}
+              />
             </div>
-          )}
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px', lineHeight: '1.4' }}>
+              Your machine's local IP, <code style={{ fontSize: '10.5px' }}>hostname.local</code>, or Tailscale MagicDNS address.
+            </div>
+          </div>
+
+          {/* Connect Button */}
+          <button
+            onClick={() => onSaveHost(inputHost, inputPort)}
+            style={{
+              padding: '10px 0',
+              borderRadius: '8px',
+              background: 'var(--cds-clay)',
+              color: '#fff',
+              border: 'none',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'opacity 0.15s ease'
+            }}
+          >
+            {connected ? <><CheckCircle2 size={15} /> Connected</> : <><Zap size={15} /> Connect</>}
+          </button>
+
+          {/* Divider */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            color: 'var(--text-secondary)',
+            fontSize: '11px'
+          }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+            <span>need to install?</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
+          </div>
+
+          {/* Install one-liner */}
+          <div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              Run this on your workstation to install herdr + start the bridge:
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#121212',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              fontFamily: 'var(--cds-font-mono)',
+              fontSize: '12.5px',
+              color: '#38bdf8',
+              border: '1px solid var(--border-subtle)'
+            }}>
+              <code>{installCmd}</code>
+              <button
+                onClick={() => copyToClipboard(installCmd)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '11px',
+                  flexShrink: 0
+                }}
+              >
+                {copiedCmd ? <Check size={14} color="#38bdf8" /> : <Copy size={14} />}
+                <span>{copiedCmd ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Modal Footer with Connection Status */}
+        {/* Footer */}
         <div style={{
           padding: '14px 24px',
           borderTop: '1px solid var(--border-subtle)',
@@ -2035,15 +1713,16 @@ function PairingOnboardingModal({ host, port, connected, onClose, onSaveHost }: 
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
             <div style={{
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              background: connected ? '#22c55e' : '#888'
+              background: connected ? '#22c55e' : '#888',
+              boxShadow: connected ? '0 0 6px rgba(34, 197, 94, 0.4)' : 'none'
             }} />
             <span style={{ color: connected ? '#22c55e' : 'var(--text-secondary)', fontWeight: 500 }}>
-              {connected ? `Connected to ${host}:${port}` : `Disconnected (${host}:${port})`}
+              {connected ? 'Live' : 'Waiting for connection…'}
             </span>
           </div>
           <button

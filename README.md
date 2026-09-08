@@ -44,7 +44,7 @@ Shepard connects directly to your workstation or compute swarm running `herdr` o
 Run the quickstart installer directly:
 
 ```bash
-curl -fsSL https://sheperd.sh | sh
+curl -fsSL https://shep.sh | sh
 ```
 
 Or start the bridge manually from source:
