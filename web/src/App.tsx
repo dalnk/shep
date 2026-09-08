@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, 
   Send, 
@@ -7,7 +7,8 @@ import {
   ChevronDown, 
   Wifi, 
   WifiOff, 
-  Terminal 
+  Terminal,
+  ArrowDown 
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -42,6 +43,32 @@ export function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const isAutoScrollRef = useRef(true);
+
+  // Auto-scroll to bottom when messages update
+  useEffect(() => {
+    if (isAutoScrollRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    // If user is within 100px of bottom, stick to bottom
+    const atBottom = distanceToBottom < 100;
+    isAutoScrollRef.current = atBottom;
+    setShowScrollBottom(distanceToBottom > 160);
+  };
+
+  const scrollToBottom = () => {
+    isAutoScrollRef.current = true;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setShowScrollBottom(false);
+  };
 
   // Connect to Herdr Daemon WebSocket
   useEffect(() => {
@@ -392,14 +419,19 @@ export function App() {
         </div>
 
         {/* Message Canvas */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '32px 0',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-        }}>
+        <div 
+          ref={canvasRef}
+          onScroll={handleScroll}
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '32px 0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'relative'
+          }}
+        >
           <div style={{ width: '100%', maxWidth: '740px', padding: '0 24px' }}>
             {messages.length === 0 && (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '80px', fontSize: '14px' }}>
@@ -452,7 +484,36 @@ export function App() {
                 )}
               </div>
             ))}
+            <div ref={messagesEndRef} style={{ height: '1px' }} />
           </div>
+
+          {/* Floating Scroll-to-Bottom Button (Claude style) */}
+          {showScrollBottom && (
+            <button
+              onClick={scrollToBottom}
+              style={{
+                position: 'fixed',
+                bottom: '88px',
+                right: 'calc(50% - 20px)',
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'var(--text-secondary)',
+                zIndex: 10,
+                transition: 'transform 0.15s ease'
+              }}
+              title="Scroll to bottom"
+            >
+              <ArrowDown size={17} />
+            </button>
+          )}
         </div>
 
         {/* Composer: Claude-style Pill Input */}
