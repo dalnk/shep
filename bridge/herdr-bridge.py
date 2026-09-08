@@ -1405,6 +1405,24 @@ def serve(sock_path: str, host: str, port: int) -> int:
     listener.settimeout(0.5)
     log.info("listening on %s:%d -> %s", host, port, sock_path)
 
+    # Print clean 1-click pairing links and QR deep-links for beginners
+    try:
+        import socket as _s
+        s = _s.socket(_s.AF_INET, _s.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        lan_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        lan_ip = host if host != "0.0.0.0" else "127.0.0.1"
+
+    print("\n" + "═" * 58)
+    print("  ✦ Shep Bridge Ready for Pairing")
+    print(f"  • Web App (Local):    http://localhost:3000/?h={lan_ip}&p={port}")
+    print(f"  • Web App (LAN/Tail): http://{lan_ip}:3000/?h={lan_ip}&p={port}")
+    print(f"  • Cloud Shep:         https://shep.work/?h={lan_ip}&p={port}")
+    print(f"  • Android Deep Link:  shep://pair?host={lan_ip}&port={port}")
+    print("═" * 58 + "\n", flush=True)
+
     stop = threading.Event()
 
     def _shutdown(*_):
