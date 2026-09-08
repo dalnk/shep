@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Shepard</string>
+    <string name="notification_channel_name">Shepard agent updates</string>
+    <string name="notification_channel_description">Background alerts for blocked or completed agents</string>
+    <string name="notification_monitoring_title">Shepard monitoring active</string>
+    <string name="notification_monitoring_text">Watching remote sessions for agent updates</string>
+</resources>
+
