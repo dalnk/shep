@@ -77,12 +77,25 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { 
+                    Text(
+                        "Settings", 
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack, 
+                            contentDescription = "Back",
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
-                }
+                },
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         }
     ) { paddingValues ->
@@ -90,29 +103,24 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            // Live Swarm Telemetry / Status Card
-            Card(
+            // Dieter Rams Section: SWARM STATUS
+            RamsSectionHeader(title = "Swarm Status")
+
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (state.connectionState == herdr.dev.app.data.ConnectionState.CONNECTED)
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                    else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-                ),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
                 border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    if (state.connectionState == herdr.dev.app.data.ConnectionState.CONNECTED)
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                    else MaterialTheme.colorScheme.error.copy(alpha = 0.3f)
+                    1.dp, 
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -125,81 +133,42 @@ fun SettingsScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(10.dp)
+                                    .size(8.dp)
                                     .background(
-                                        if (state.connectionState == herdr.dev.app.data.ConnectionState.CONNECTED)
-                                            Color(0xFF10B981)
-                                        else MaterialTheme.colorScheme.error,
+                                        if (isConnected) Color(0xFF10B981) else MaterialTheme.colorScheme.error,
                                         CircleShape
                                     )
                             )
                             Text(
-                                text = if (state.connectionState == herdr.dev.app.data.ConnectionState.CONNECTED) "Swarm Online" else "Swarm Disconnected",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                text = if (isConnected) "Online" else "Disconnected",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "·  ${state.serverHost}:${state.serverPort}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        androidx.compose.material3.TextButton(onClick = { viewModel.reconnect() }) {
-                            Text("Reconnect")
+                        TextButton(
+                            onClick = { viewModel.reconnect() },
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text("Reconnect", style = MaterialTheme.typography.labelSmall)
                         }
                     }
 
-                    // Cluster metrics grid
+                    // Compact metrics strip
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Text(
-                                text = "${state.activePanesCount}",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = "Working Agents",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "${state.waitingPanesCount}",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Text(
-                                text = "Needs Attention",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "${state.donePanesCount}",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
-                            Text(
-                                text = "Completed",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Column {
-                            Text(
-                                text = "${state.totalPanes}",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                            Text(
-                                text = "Total Panes",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        RamsStatItem(label = "Active", count = state.activePanesCount, color = MaterialTheme.colorScheme.primary)
+                        RamsStatItem(label = "Attention", count = state.waitingPanesCount, color = if (state.waitingPanesCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                        RamsStatItem(label = "Completed", count = state.donePanesCount, color = MaterialTheme.colorScheme.onSurface)
+                        RamsStatItem(label = "Total", count = state.totalPanes, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
                     if (state.activeAgents.isNotEmpty()) {
@@ -208,192 +177,155 @@ fun SettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Engines: ",
+                                text = "Engines:",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             state.activeAgents.forEach { agent ->
-                                androidx.compose.material3.Surface(
-                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-                                ) {
-                                    Text(
-                                        text = agent,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
+                                Text(
+                                    text = agent,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceContainerHighest,
+                                            RoundedCornerShape(4.dp)
+                                        )
+                                        .padding(horizontal = 5.dp, vertical = 1.dp)
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // Quick Pair Swarm (Tailcat / QR Onboarding)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            // Dieter Rams Section: PAIRING
+            Spacer(modifier = Modifier.height(14.dp))
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        android.widget.Toast.makeText(context, "Pairing camera flow ready for Tailcat token", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp, 
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            Icons.Default.Sync,
-                            contentDescription = "Pair Swarm",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(28.dp)
+                    Column {
+                        Text(
+                            text = "Pair New Machine",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
                         )
-                        Column {
-                            Text(
-                                text = "Pair New Machine",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "Scan QR from 'herdr pair' in terminal",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = "Scan QR code generated by 'herdr pair'",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    FilledTonalButton(
-                        onClick = {
-                            android.widget.Toast.makeText(context, "Pairing camera flow ready for Tailcat token", android.widget.Toast.LENGTH_SHORT).show()
-                        }
-                    ) {
-                        Text("Scan QR")
-                    }
+                    Text(
+                        text = "Scan QR ▸",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
 
-            // Autonomous Mode & Danger Level Section
-            Text(
-                text = "Autonomous Mode & Danger Level",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Dieter Rams Section: AUTONOMY & DANGER LEVEL
+            Spacer(modifier = Modifier.height(18.dp))
+            RamsSectionHeader(title = "Swarm Autonomy")
 
-            Card(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp, 
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text(
-                        text = "Swarm Autonomy",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Controls whether Shepard automatically sends proceed/approval to blocked agents.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    DangerLevelOptionCard(
-                        level = herdr.dev.app.data.DangerLevel.ZERO_DANGER,
+                Column {
+                    RamsAutonomyRow(
                         title = "0 Danger",
-                        description = "Zero autonomous risk. Never auto-proceed; require explicit manual confirmation for every step.",
-                        icon = Icons.Default.CheckCircle,
+                        description = "Strict manual confirmation for every action",
                         isSelected = state.dangerLevel == herdr.dev.app.data.DangerLevel.ZERO_DANGER,
                         onClick = { viewModel.updateDangerLevel(herdr.dev.app.data.DangerLevel.ZERO_DANGER) }
                     )
-
-                    DangerLevelOptionCard(
-                        level = herdr.dev.app.data.DangerLevel.NORMAL,
+                    RamsDivider()
+                    RamsAutonomyRow(
                         title = "Normal",
-                        description = "Standard mode. Pauses and prompts for approval before proceeding.",
-                        icon = Icons.Default.Info,
+                        description = "Pauses and prompts for approval before proceeding",
                         isSelected = state.dangerLevel == herdr.dev.app.data.DangerLevel.NORMAL,
                         onClick = { viewModel.updateDangerLevel(herdr.dev.app.data.DangerLevel.NORMAL) }
                     )
-
-                    DangerLevelOptionCard(
-                        level = herdr.dev.app.data.DangerLevel.DANGERMAXXING,
+                    RamsDivider()
+                    RamsAutonomyRow(
                         title = "Dangermaxxing",
-                        description = "Maximum velocity! Auto-proceed and auto-approve paused agents so the swarm never stops.",
-                        icon = Icons.Default.Bolt,
+                        badge = "AUTO-PROCEED",
+                        description = "Uninhibited swarm velocity; auto-approves paused agents",
                         isSelected = state.dangerLevel == herdr.dev.app.data.DangerLevel.DANGERMAXXING,
-                        isHighlight = true,
                         onClick = { viewModel.updateDangerLevel(herdr.dev.app.data.DangerLevel.DANGERMAXXING) }
                     )
                 }
             }
 
-            // Appearance section
-            Text(
-                text = "Preferences",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Dieter Rams Section: PREFERENCES
+            Spacer(modifier = Modifier.height(18.dp))
+            RamsSectionHeader(title = "Preferences")
 
-            SettingCard(
-                title = "Dark Theme",
-                description = "Optimized for OLED & E-ink Paper displays",
-                icon = Icons.Default.DarkMode,
-                trailing = {
-                    Switch(
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp, 
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column {
+                    RamsToggleRow(
+                        title = "Dark Theme",
+                        description = "Optimized for OLED & E-ink Paper displays",
                         checked = darkMode,
                         onCheckedChange = { darkMode = it }
                     )
-                }
-            )
-
-            SettingCard(
-                title = "Notifications",
-                description = "Alert when agents pause for review or finish",
-                icon = Icons.Default.Notifications,
-                trailing = {
-                    Switch(
+                    RamsDivider()
+                    RamsToggleRow(
+                        title = "Notifications",
+                        description = "Alert when agents pause for review or finish",
                         checked = notifications,
                         onCheckedChange = { notifications = it }
                     )
                 }
-            )
+            }
 
-            // About section
-            Text(
-                text = "System",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Dieter Rams Section: BRIDGE ENDPOINT
+            Spacer(modifier = Modifier.height(18.dp))
+            RamsSectionHeader(title = "Network Endpoint")
 
-            SettingCard(
-                title = "Shepard",
-                description = "v0.0.1 · herdr.dev remote interface",
-                icon = Icons.Default.Info,
-                trailing = null
-            )
-
-            // Advanced Connection / Host Endpoint (Discreetly tucked at the bottom)
-            Card(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp, 
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -402,32 +334,23 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.SettingsEthernet,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        Column {
+                            Text(
+                                text = "Daemon Host & Port",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
                             )
-                            Column {
-                                Text(
-                                    text = "Manual Bridge Endpoint",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text = if (isConnected) "Connected to ${state.serverHost}:${state.serverPort}" else "${state.serverHost}:${state.serverPort}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                            Text(
+                                text = "${state.serverHost}:${state.serverPort}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                        Icon(
-                            imageVector = if (showManualEndpoint) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = if (showManualEndpoint) "Collapse" else "Expand",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        Text(
+                            text = if (showManualEndpoint) "Hide" else "Edit",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
 
@@ -435,14 +358,14 @@ fun SettingsScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                .padding(top = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             OutlinedTextField(
                                 value = state.serverHost,
                                 onValueChange = { viewModel.updateServerHost(it) },
                                 modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Bridge Host / Hostname") },
+                                label = { Text("Host", style = MaterialTheme.typography.labelSmall) },
                                 placeholder = { Text("neo.local or 10.0.0.244") },
                                 singleLine = true
                             )
@@ -450,7 +373,7 @@ fun SettingsScreen(
                                 value = state.serverPort,
                                 onValueChange = { viewModel.updateServerPort(it) },
                                 modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Bridge Port") },
+                                label = { Text("Port", style = MaterialTheme.typography.labelSmall) },
                                 placeholder = { Text("8765") },
                                 singleLine = true
                             )
@@ -458,155 +381,151 @@ fun SettingsScreen(
                     }
                 }
             }
-        }
-    }
-}
 
-@Composable
-private fun SettingCard(
-    title: String,
-    description: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    trailing: @Composable (() -> Unit)?,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+            // Version Footer
+            Spacer(modifier = Modifier.height(20.dp))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                Text(
+                    text = "Shepard v0.0.1  ·  herdr.dev",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
-            trailing?.invoke()
         }
     }
 }
 
 @Composable
-private fun DangerLevelOptionCard(
-    level: herdr.dev.app.data.DangerLevel,
+private fun RamsSectionHeader(title: String) {
+    Text(
+        text = title.uppercase(),
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(start = 2.dp, bottom = 6.dp)
+    )
+}
+
+@Composable
+private fun RamsStatItem(label: String, count: Int, color: Color) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = "$count",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun RamsDivider() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+    )
+}
+
+@Composable
+private fun RamsAutonomyRow(
     title: String,
     description: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
-    isHighlight: Boolean = false,
+    badge: String? = null,
     onClick: () -> Unit,
 ) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) {
-            if (isHighlight) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-            else MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-        } else {
-            MaterialTheme.colorScheme.surface
-        },
-        border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(
-                2.dp,
-                if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-            )
-        } else {
-            androidx.compose.foundation.BorderStroke(
-                1.dp,
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-            )
-        },
-        modifier = Modifier.fillMaxWidth()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Surface(
-                modifier = Modifier.size(40.dp),
-                shape = CircleShape,
-                color = if (isSelected) {
-                    if (isHighlight) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHighest
-                }
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = if (isSelected) {
-                            if (isHighlight) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
-                    )
-                    if (isHighlight) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = MaterialTheme.colorScheme.errorContainer
-                        ) {
-                            Text(
-                                text = "AUTO-PROCEED",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-                }
                 Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                     color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (badge != null) {
+                    Text(
+                        text = badge,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                    )
+                }
             }
-
-            RadioButton(
-                selected = isSelected,
-                onClick = onClick
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        RadioButton(
+            selected = isSelected,
+            onClick = onClick
+        )
+    }
+}
+
+@Composable
+private fun RamsToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }

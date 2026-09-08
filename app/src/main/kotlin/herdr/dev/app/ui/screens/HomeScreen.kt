@@ -416,7 +416,7 @@ private fun PausedAgentInboxCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpenChat),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = when (dangerLevel) {
                 herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.tertiaryContainer
@@ -428,47 +428,25 @@ private fun PausedAgentInboxCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(
-                            when (dangerLevel) {
-                                herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.tertiary
-                                else -> MaterialTheme.colorScheme.error
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        if (dangerLevel == herdr.dev.app.data.DangerLevel.DANGERMAXXING) Icons.Default.Bolt else Icons.Default.PauseCircleFilled,
-                        contentDescription = "Paused",
-                        tint = when (dangerLevel) {
-                            herdr.dev.app.data.DangerLevel.DANGERMAXXING -> MaterialTheme.colorScheme.onTertiary
-                            else -> MaterialTheme.colorScheme.onError
-                        },
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = pane.title.ifBlank { "Pane ${pane.id}" },
                         style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = when (dangerLevel) {
                             herdr.dev.app.data.DangerLevel.DANGERMAXXING -> "${pane.agentName} · ⚡ Auto-proceeding via Dangermaxxing..."
-                            herdr.dev.app.data.DangerLevel.ZERO_DANGER -> "${pane.agentName} · 🛡️ 0 Danger: Manual approval required"
-                            herdr.dev.app.data.DangerLevel.NORMAL -> if (waitingStr.isNotBlank()) "${pane.agentName} · Waiting $waitingStr for approval" else "${pane.agentName} · Waiting for approval or input"
+                            herdr.dev.app.data.DangerLevel.ZERO_DANGER -> "${pane.agentName} · 🛡️ Manual approval required"
+                            herdr.dev.app.data.DangerLevel.NORMAL -> if (waitingStr.isNotBlank()) "${pane.agentName} · Waiting $waitingStr" else "${pane.agentName} · Waiting for approval"
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = if (dangerLevel == herdr.dev.app.data.DangerLevel.DANGERMAXXING) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
@@ -528,7 +506,7 @@ private fun DoneAgentInboxCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpenChat),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
@@ -537,20 +515,17 @@ private fun DoneAgentInboxCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            AgentAvatar(
-                agentName = pane.agentName,
-                isSelected = false,
-                modifier = Modifier.size(36.dp)
-            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = pane.title.ifBlank { "Pane ${pane.id}" },
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
                     text = if (waitingStr.isNotBlank()) "${pane.agentName} · Finished · Idle for $waitingStr" else "${pane.agentName} · Finished",
@@ -561,7 +536,7 @@ private fun DoneAgentInboxCard(
             // MD3 paper-outlined subtle X button in top corner
             Box(
                 modifier = Modifier
-                    .size(30.dp)
+                    .size(28.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surface)
                     .clickable(onClick = onDismiss),
@@ -571,7 +546,7 @@ private fun DoneAgentInboxCard(
                     Icons.Default.Close,
                     contentDescription = "Dismiss task",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
             }
         }
