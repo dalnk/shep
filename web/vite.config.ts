@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
       manifest: {
-        name: 'Shep Multi-Agent Workspace',
+        name: 'Shep',
         short_name: 'Shep',
         description: 'Claude-aesthetic streaming interface for Herdr multi-agent daemon',
         theme_color: '#fcfcfb',
