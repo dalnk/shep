@@ -393,6 +393,33 @@
       margin-bottom: 8px;
     }
 
+    .token-counter {
+      color: var(--text-muted);
+      font-size: 0.62rem;
+      transition: all 0.5s ease;
+      animation: toggleTokens 14s infinite ease-in-out;
+    }
+
+    /* Hide token counter in narrow phone mode (0% - 28%), show on unfolded / tablet */
+    @keyframes toggleTokens {
+      0%, 28% {
+        opacity: 0;
+        display: none;
+        width: 0;
+        overflow: hidden;
+      }
+      34%, 95% {
+        opacity: 1;
+        display: inline;
+        width: auto;
+      }
+      100% {
+        opacity: 0;
+        display: none;
+        width: 0;
+      }
+    }
+
     .chat-bubble {
       padding: 7px 12px;
       border-radius: 12px;
@@ -781,7 +808,7 @@
             <div class="app-chat-pane">
               <div class="thread-header">
                 <span style="color: #58a6ff; font-weight: 600;">daybreak // codex</span>
-                <span style="color: var(--text-muted);">tokens: 4,120</span>
+                <span class="token-counter">tokens: 4,120</span>
               </div>
 
               <div class="chat-bubble bubble-agent">
