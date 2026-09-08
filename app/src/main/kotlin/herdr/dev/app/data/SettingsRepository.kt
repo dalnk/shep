@@ -97,4 +97,7 @@ class SettingsRepository @Inject constructor(
             preferences[DANGER_LEVEL_KEY] = level.name
         }
     }
+
+    val cacheDir: java.io.File
+        get() = context.cacheDir
 }
