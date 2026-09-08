@@ -306,43 +306,40 @@ private fun ChatBubble(
                 )
             }
 
-            // 1. Structured Thinking (from underclass, grok, etc.)
+            // 1. Structured Thinking (from underclass, grok, etc.) - Claude style Thought summary
             if (!message.thinking.isNullOrBlank()) {
                 var thinkingExpanded by remember { mutableStateOf(false) }
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                    shape = RoundedCornerShape(8.dp),
+                Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 6.dp)
+                        .clip(RoundedCornerShape(8.dp))
                         .clickable { thinkingExpanded = !thinkingExpanded }
+                        .padding(vertical = 3.dp, horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "💭 Thought process",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
-                            Text(
-                                text = if (thinkingExpanded) "▾ hide" else "▸ expand",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (thinkingExpanded) {
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = message.thinking,
-                                style = MaterialTheme.typography.bodySmall.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                    Text(
+                        text = "Thought",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                    )
+                    Text(
+                        text = if (thinkingExpanded) "▾" else "▸",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+                if (thinkingExpanded) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 6.dp, bottom = 8.dp)
+                    ) {
+                        Text(
+                            text = message.thinking,
+                            style = MaterialTheme.typography.bodySmall.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
                     }
                 }
             }
