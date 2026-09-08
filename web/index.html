@@ -235,14 +235,24 @@
     }
 
     /* ========================================================= */
-    /* CLEAN ADAPTIVE HARDWARE SHOWCASE (NO BOX, AMOLED BLACK)   */
+    /* CLEAN ADAPTIVE HARDWARE SHOWCASE (NEUTRAL VERTICAL FLOW)  */
     /* ========================================================= */
     .device-showcase-stage {
       background: transparent;
-      padding: 0 0 3.5rem;
+      padding: 1rem 0 3.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    /* Fixed vertical anchor box so morphing width/height causes ZERO vertical layout jitter */
+    .device-viewport-anchor {
+      width: 100%;
+      height: 490px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
 
     /* Device chassis morphs between exact real hardware aspect ratios:
@@ -840,69 +850,71 @@
 
     <!-- Seamless Hardware Form-Factor Showcase -->
     <div class="device-showcase-stage">
-      <div class="device-chassis">
-        <div class="device-screen">
-          <!-- Top App Bar exactly matching HomeScreen / ChatScreen -->
-          <div class="app-top-bar">
-            <div class="app-top-left">
-              <span class="wifi-icon-svg">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
-              </span>
-              <span class="app-title-text">Shepard</span>
-            </div>
-            <div class="app-top-right">
-              <span class="danger-pill">DANGERMAXXING</span>
-            </div>
-          </div>
-
-          <!-- Body with Morphing Sidebar and Chat Area -->
-          <div class="app-body">
-            <!-- Sidebar with Search/Ask bar & Threads -->
-            <div class="app-sidebar">
-              <div class="sidebar-search">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span>Filter or ask _</span>
+      <div class="device-viewport-anchor">
+        <div class="device-chassis">
+          <div class="device-screen">
+            <!-- Top App Bar exactly matching HomeScreen / ChatScreen -->
+            <div class="app-top-bar">
+              <div class="app-top-left">
+                <span class="wifi-icon-svg">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+                </span>
+                <span class="app-title-text">Shepard</span>
               </div>
-              <div class="sidebar-item active">
-                <span class="thread-dot dot-working"></span>
-                <span>daybreak</span>
-                <span class="status-badge badge-working">WORK</span>
-              </div>
-              <div class="sidebar-item">
-                <span class="thread-dot dot-idle"></span>
-                <span>codex-test</span>
-                <span class="status-badge badge-idle">IDLE</span>
-              </div>
-              <div class="sidebar-item">
-                <span class="thread-dot dot-idle"></span>
-                <span>swarm-bridge</span>
-                <span class="status-badge badge-idle">IDLE</span>
+              <div class="app-top-right">
+                <span class="danger-pill">DANGERMAXXING</span>
               </div>
             </div>
 
-            <!-- Chat Pane -->
-            <div class="app-chat-pane">
-              <div class="thread-header">
-                <span style="color: #58a6ff; font-weight: 600;">daybreak // codex</span>
-                <span class="token-counter">tokens: 4,120</span>
+            <!-- Body with Morphing Sidebar and Chat Area -->
+            <div class="app-body">
+              <!-- Sidebar with Search/Ask bar & Threads -->
+              <div class="app-sidebar">
+                <div class="sidebar-search">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <span>Filter or ask _</span>
+                </div>
+                <div class="sidebar-item active">
+                  <span class="thread-dot dot-working"></span>
+                  <span>daybreak</span>
+                  <span class="status-badge badge-working">WORK</span>
+                </div>
+                <div class="sidebar-item">
+                  <span class="thread-dot dot-idle"></span>
+                  <span>codex-test</span>
+                  <span class="status-badge badge-idle">IDLE</span>
+                </div>
+                <div class="sidebar-item">
+                  <span class="thread-dot dot-idle"></span>
+                  <span>swarm-bridge</span>
+                  <span class="status-badge badge-idle">IDLE</span>
+                </div>
               </div>
 
-              <div class="chat-bubble bubble-agent">
-                Modified <code>HomeScreen.kt</code> with collapsible sidebar.
-              </div>
+              <!-- Chat Pane -->
+              <div class="app-chat-pane">
+                <div class="thread-header">
+                  <span style="color: #58a6ff; font-weight: 600;">daybreak // codex</span>
+                  <span class="token-counter">tokens: 4,120</span>
+                </div>
 
-              <div class="chat-bubble bubble-user">
-                Run check suite
-              </div>
+                <div class="chat-bubble bubble-agent">
+                  Modified <code>HomeScreen.kt</code> with collapsible sidebar.
+                </div>
 
-              <div class="chat-bubble bubble-agent">
-                <code>./gradlew check</code> &bull; <span style="color: var(--signal-orange);">WORKING</span>
-              </div>
+                <div class="chat-bubble bubble-user">
+                  Run check suite
+                </div>
 
-              <!-- Minimal Integrated Input Bar -->
-              <div class="app-input-bar">
-                <span>Type message to agent...</span>
-                <span class="send-pill">SEND</span>
+                <div class="chat-bubble bubble-agent">
+                  <code>./gradlew check</code> &bull; <span style="color: var(--signal-orange);">WORKING</span>
+                </div>
+
+                <!-- Minimal Integrated Input Bar -->
+                <div class="app-input-bar">
+                  <span>Type message to agent...</span>
+                  <span class="send-pill">SEND</span>
+                </div>
               </div>
             </div>
           </div>
