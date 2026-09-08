@@ -248,11 +248,11 @@
 
     /* Device chassis that morphs width and height smoothly */
     .device-chassis {
-      background: #050607;
-      border: 2px solid #333842;
-      border-radius: 28px;
-      padding: 10px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px #11141a;
+      background: #000000;
+      border: 2px solid #282c34;
+      border-radius: 20px;
+      padding: 6px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.7), inset 0 0 0 1px #16181d;
       transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
@@ -262,39 +262,27 @@
       overflow: hidden;
     }
 
-    /* Camera punch hole */
-    .device-notch {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #111418;
-      margin: 2px auto 6px;
-      border: 1px solid #20242b;
-      flex-shrink: 0;
-    }
-
     /* Screen contents */
     .device-screen {
-      background: #121316;
-      border-radius: 18px;
+      background: #111215;
+      border-radius: 14px;
       overflow: hidden;
       flex: 1;
       display: flex;
       flex-direction: column;
-      border: 1px solid #20242c;
+      border: 1px solid #1c1f26;
       position: relative;
     }
 
-    /* Top App Bar inside Shep */
+    /* Top App Bar inside Shep (CenterAlignedTopAppBar replica) */
     .app-top-bar {
-      background: #181a1e;
-      border-bottom: 1px solid #282c35;
-      padding: 8px 12px;
+      background: #16181d;
+      border-bottom: 1px solid #232730;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-family: var(--font-ui);
       flex-shrink: 0;
     }
 
@@ -304,11 +292,29 @@
       gap: 8px;
     }
 
-    .signal-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--signal-green);
+    .wifi-icon-svg {
+      color: #64b5f6;
+      display: flex;
+      align-items: center;
+    }
+
+    .app-title-text {
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .danger-pill {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      font-weight: 700;
+      background: rgba(255, 85, 0, 0.15);
+      border: 1px solid rgba(255, 85, 0, 0.3);
+      color: var(--signal-orange);
+      padding: 2px 6px;
+      border-radius: 9999px;
+      letter-spacing: 0.04em;
     }
 
     /* App Workspace: Sidebar + Chat Pane */
@@ -321,23 +327,46 @@
 
     /* Sidebar (collapses on phone mode, expands on unfolded/tablet) */
     .app-sidebar {
-      background: #15171a;
-      border-right: 1px solid #262a32;
+      background: #131518;
+      border-right: 1px solid #21242c;
       display: flex;
       flex-direction: column;
-      padding: 8px;
+      padding: 10px 8px;
       overflow: hidden;
       flex-shrink: 0;
       transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
       animation: morphSidebar 12s infinite ease-in-out;
     }
 
+    .sidebar-search {
+      background: #1c1e24;
+      border: 1px solid #282c36;
+      border-radius: 9999px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
+
+    .thread-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-working { background: var(--signal-orange); }
+    .dot-idle { background: #555b66; }
+
     .sidebar-item {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 6px 8px;
-      border-radius: 4px;
+      border-radius: 6px;
       font-family: var(--font-mono);
       font-size: 0.65rem;
       margin-bottom: 4px;
@@ -346,18 +375,18 @@
     }
 
     .sidebar-item.active {
-      background: #21252d;
+      background: #1f222a;
       color: #fff;
       font-weight: 600;
     }
 
     .status-badge {
-      font-size: 0.55rem;
+      font-size: 0.52rem;
       padding: 1px 4px;
       border-radius: 2px;
       margin-left: auto;
     }
-    .badge-working { background: rgba(255, 85, 0, 0.18); color: var(--signal-orange); }
+    .badge-working { background: rgba(255, 85, 0, 0.2); color: var(--signal-orange); }
     .badge-idle { background: rgba(154, 160, 170, 0.15); color: var(--text-muted); }
 
     /* Chat / Remote Pane */
@@ -365,8 +394,8 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 10px 12px;
-      background: #0e0f11;
+      padding: 10px 14px;
+      background: #0d0e11;
       overflow: hidden;
     }
 
@@ -375,27 +404,28 @@
       justify-content: space-between;
       align-items: center;
       padding-bottom: 6px;
-      border-bottom: 1px solid #1c1f26;
+      border-bottom: 1px solid #1a1d24;
       font-family: var(--font-mono);
       font-size: 0.68rem;
       margin-bottom: 8px;
     }
 
     .chat-bubble {
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      line-height: 1.4;
+      padding: 7px 12px;
+      border-radius: 12px;
+      font-size: 0.73rem;
+      line-height: 1.45;
       margin-bottom: 6px;
-      max-width: 90%;
+      max-width: 88%;
       font-family: var(--font-ui);
     }
 
     .bubble-agent {
-      background: #191c22;
-      border: 1px solid #272c36;
+      background: #171920;
+      border: 1px solid #242933;
       color: #cfd5df;
       align-self: flex-start;
+      border-bottom-left-radius: 4px;
     }
 
     .bubble-agent code {
@@ -405,19 +435,20 @@
     }
 
     .bubble-user {
-      background: #252830;
+      background: #2a2e38;
       color: #fff;
       align-self: flex-end;
       margin-left: auto;
+      border-bottom-right-radius: 4px;
     }
 
-    /* Minimal integrated bottom input bar */
+    /* Minimal integrated rounded input bar matching ChatInputBar */
     .app-input-bar {
       margin-top: auto;
-      background: #17191d;
-      border: 1px solid #2c313a;
-      border-radius: 6px;
-      padding: 4px 8px 4px 10px;
+      background: #14161b;
+      border: 1px solid #282d38;
+      border-radius: 9999px;
+      padding: 5px 6px 5px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -428,12 +459,15 @@
 
     .send-pill {
       background: #ffffff;
-      color: #000;
+      color: #000000;
       font-family: var(--font-mono);
       font-size: 0.6rem;
       font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
     }
 
     /* Mode indicator label below device */
@@ -716,38 +750,48 @@
       </div>
     </section>
 
-    <!-- PURE CSS ADAPTIVE MORPHING DEMO -->
+    <!-- SHeP Remote Live Interface Showcase -->
     <div class="device-showcase-stage">
       <div class="stage-label-bar">
-        <span>DYNAMIC FORM-FACTOR ENGINE</span>
-        <span>PURE CSS VIEWPORT MORPH</span>
+        <span>INTERFACE // ADAPTIVE VIEWPORT</span>
+        <span>CONNECTED // neo.local:8765</span>
       </div>
 
       <div class="device-chassis">
-        <div class="device-notch"></div>
         <div class="device-screen">
-          <!-- SHeP App Header -->
+          <!-- Top App Bar exactly matching HomeScreen / ChatScreen -->
           <div class="app-top-bar">
             <div class="app-top-left">
-              <span class="signal-dot"></span>
-              <span>shep // neo.local</span>
+              <span class="wifi-icon-svg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+              </span>
+              <span class="app-title-text">Shepard</span>
             </div>
-            <span style="color: var(--text-muted); font-size: 0.6rem;">DANGERMAXXING</span>
+            <div class="app-top-right">
+              <span class="danger-pill">DANGERMAXXING</span>
+            </div>
           </div>
 
           <!-- Body with Morphing Sidebar and Chat Area -->
           <div class="app-body">
-            <!-- Sidebar (Morphs width via CSS) -->
+            <!-- Sidebar with Search/Ask bar & Threads -->
             <div class="app-sidebar">
+              <div class="sidebar-search">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Filter or ask _</span>
+              </div>
               <div class="sidebar-item active">
+                <span class="thread-dot dot-working"></span>
                 <span>daybreak</span>
                 <span class="status-badge badge-working">WORK</span>
               </div>
               <div class="sidebar-item">
+                <span class="thread-dot dot-idle"></span>
                 <span>codex-test</span>
                 <span class="status-badge badge-idle">IDLE</span>
               </div>
               <div class="sidebar-item">
+                <span class="thread-dot dot-idle"></span>
                 <span>swarm-bridge</span>
                 <span class="status-badge badge-idle">IDLE</span>
               </div>
