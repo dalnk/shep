@@ -69,6 +69,7 @@ export function App() {
   const [terminalLoading, setTerminalLoading] = useState<boolean>(false);
   const [terminalPaneId, setTerminalPaneId] = useState<string>('');
   const [copiedTerminal, setCopiedTerminal] = useState<boolean>(false);
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
 
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -118,6 +119,68 @@ export function App() {
       setShowScrollBottom(true);
     }
   };
+
+  // Keyboard navigation shortcuts matching Claude Desktop:
+  // - Cmd+Alt+Up / Alt+Up: jump to previous prompt
+  // - Cmd+Alt+Down / Alt+Down: jump to next prompt
+  // - Cmd+B: toggle tasks side pane
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Toggle side pane with Cmd+B / Ctrl+B
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setShowAuxPane(prev => !prev);
+        return;
+      }
+
+      // Jump to previous/next prompt with Cmd+Alt+Up/Down
+      const isAlt = e.altKey;
+      const isMacCmd = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? e.metaKey : true;
+      if (isAlt && isMacCmd) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          // Find current prompt closest to or above view
+          const userMsgIndices = messages
+            .map((m, idx) => (m.sender === 'user' ? idx : -1))
+            .filter(i => i >= 0);
+          if (userMsgIndices.length > 0) {
+            const container = canvasRef.current;
+            const curTop = container ? container.scrollTop : 0;
+            let targetIdx = userMsgIndices[0];
+            for (let i = userMsgIndices.length - 1; i >= 0; i--) {
+              const el = document.getElementById(`msg-turn-${userMsgIndices[i]}`);
+              if (el && el.offsetTop < curTop - 20) {
+                targetIdx = userMsgIndices[i];
+                break;
+              }
+            }
+            jumpToTurn(targetIdx);
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const userMsgIndices = messages
+            .map((m, idx) => (m.sender === 'user' ? idx : -1))
+            .filter(i => i >= 0);
+          if (userMsgIndices.length > 0) {
+            const container = canvasRef.current;
+            const curTop = container ? container.scrollTop : 0;
+            let targetIdx = userMsgIndices[userMsgIndices.length - 1];
+            for (let i = 0; i < userMsgIndices.length; i++) {
+              const el = document.getElementById(`msg-turn-${userMsgIndices[i]}`);
+              if (el && el.offsetTop > curTop + 40) {
+                targetIdx = userMsgIndices[i];
+                break;
+              }
+            }
+            jumpToTurn(targetIdx);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [messages]);
 
   // Connect to Herdr Daemon WebSocket
   useEffect(() => {
@@ -783,6 +846,43 @@ export function App() {
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {msg.text}
                       </ReactMarkdown>
+                    </div>
+
+                    {/* Claude Desktop-style bottom message actions (Copy text) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg.text);
+                          setCopiedMsgId(msg.id);
+                          setTimeout(() => setCopiedMsgId(null), 2000);
+                        }}
+                        title="Copy message"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '3px 6px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          color: 'var(--text-secondary)',
+                          cursor: 'pointer',
+                          transition: 'color 0.15s ease'
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                      >
+                        {copiedMsgId === msg.id ? (
+                          <>
+                            <Check size={12} color="var(--cds-clay)" />
+                            <span style={{ color: 'var(--cds-clay)' }}>Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={12} />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 )}
