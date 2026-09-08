@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHEP — Pocket Remote Controller for Agent Swarms</title>
+  <meta name="description" content="Industrial utility remote controller for AI coding swarms. Built for Daylight e-paper tablets, foldables, and pocket devices. Pure precision, zero telemetry.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Braun / Industrial Precision Palette */
+      --bg: #141517;
+      --surface: #1b1d20;
+      --surface-elevated: #22252a;
+      --border-dark: #2a2e35;
+      --border-light: #383e47;
+      --text-main: #ebedf0;
+      --text-dim: #9aa0aa;
+      --text-muted: #676e7b;
+      
+      /* Dieter Rams Signal Accents */
+      --signal-orange: #ff5500;
+      --signal-amber: #e6a100;
+      --signal-green: #2ecc71;
+      
+      --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 1.5rem 5rem;
+    }
+
+    .frame {
+      max-width: 820px;
+      margin: 0 auto;
+      border-left: 1px solid var(--border-dark);
+      border-right: 1px solid var(--border-dark);
+      padding: 0 2rem;
+      background: var(--bg);
+    }
+
+    /* Technical Header & Model Strip */
+    .utility-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 0;
+      border-bottom: 2px solid var(--border-dark);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .utility-strip .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-dim);
+    }
+
+    .status-pip {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--signal-orange);
+    }
+
+    header {
+      padding: 2.5rem 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .brand-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .model-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border-dark);
+      color: var(--text-muted);
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 3.5rem 0 2.5rem;
+    }
+
+    .index-mark {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--signal-orange);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    h1 {
+      font-size: 2.85rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      margin-bottom: 1.25rem;
+      color: var(--text-main);
+    }
+
+    p.lead {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 660px;
+      line-height: 1.6;
+      margin-bottom: 2.75rem;
+    }
+
+    /* Quickstart Console Box */
+    .console-module {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 4px;
+      margin-bottom: 3.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .module-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 1rem;
+      background: #111214;
+      border-bottom: 1px solid var(--border-dark);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .command-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: #0d0e10;
+      overflow-x: auto;
+    }
+
+    .command-strip code {
+      color: #38bdf8;
+    }
+
+    .action-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 2px;
+      cursor: pointer;
+      margin-left: 1.25rem;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      background: #2f343d;
+      border-color: #4b535f;
+    }
+
+    /* Technical Spec & Instrument View */
+    .instrument-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .instrument-cell {
+      background: var(--surface);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .instrument-cell::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: transparent;
+      transition: background 0.2s ease;
+    }
+
+    .instrument-cell:hover::before {
+      background: var(--signal-orange);
+    }
+
+    .cell-id {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .instrument-cell h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .instrument-cell p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    /* Full-width Ecosystem Unit */
+    .ecosystem-unit {
+      grid-column: 1 / -1;
+      border-color: var(--border-light);
+      background: var(--surface-elevated);
+    }
+
+    .ecosystem-unit h3 a {
+      color: var(--text-main);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    /* Monitor Display */
+    .monitor-screen {
+      background: #0a0b0c;
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin-bottom: 3.5rem;
+      line-height: 1.7;
+    }
+
+    .monitor-screen-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      border-bottom: 1px solid #1a1d22;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    .agent-tag { color: #58a6ff; font-weight: 600; }
+    .status-working { color: var(--signal-orange); }
+    .status-done { color: var(--signal-green); }
+    .status-user { color: #f0883e; }
+
+    /* Bottom Industrial CTA */
+    .cta-strip {
+      padding: 2.75rem 0 3.5rem;
+      text-align: center;
+      border-top: 1px solid var(--border-dark);
+    }
+
+    .primary-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--text-main);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 3px;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      letter-spacing: -0.01em;
+      transition: background 0.15s;
+    }
+
+    .primary-btn:hover {
+      background: #ffffff;
+    }
+
+    .secondary-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-light);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      margin-left: 0.75rem;
+      transition: all 0.15s;
+    }
+
+    .secondary-btn:hover {
+      background: var(--surface);
+      border-color: #4b535f;
+    }
+
+    footer {
+      border-top: 2px solid var(--border-dark);
+      padding: 1.75rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--text-main);
+    }
+
+    @media (max-width: 680px) {
+      .frame { padding: 0 1.25rem; border: none; }
+      h1 { font-size: 2.2rem; }
+      .instrument-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; gap: 1rem; }
+      .nav-links { gap: 1rem; }
+      footer { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+      .secondary-btn { margin-left: 0; margin-top: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div style="border-bottom: 1px solid var(--border-dark); padding: 0.6rem 0; display: flex; gap: 1rem; font-family: var(--font-mono); font-size: 0.75rem;">
+      <span style="color: var(--text-muted);">THEMES:</span>
+      <a href="theme-industrial.html" style="color: var(--signal-orange); font-weight: 700; text-decoration: underline;">Industrial (Braun)</a>
+      <a href="theme-epaper.html" style="color: var(--text-dim); text-decoration: none;">Daylight E-Paper</a>
+      <a href="theme-brutalist.html" style="color: var(--text-dim); text-decoration: none;">Hacker Monospace</a>
+      <a href="theme-nordic.html" style="color: var(--text-dim); text-decoration: none;">Cyber Minimal</a>
+    </div>
+
+    <div class="utility-strip">
+      <span>SYS.SPEC // ANDROID &bull; EPAPER &bull; FOLDABLE</span>
+      <span class="status-indicator"><span class="status-pip"></span>RELAY ENGINE READY</span>
+    </div>
+
+    <header>
+      <div class="brand">
+        <a href="/" class="brand-title">SHEP</a>
+        <span class="model-tag">REV 1.0</span>
+      </div>
+      <nav class="nav-links">
+        <a href="https://github.com/dalnk/shep" target="_blank" rel="noopener">SOURCE</a>
+        <a href="#install">INSTALL</a>
+        <a href="#specs">SPECIFICATION</a>
+        <a href="https://github.com/dalnk/shep/releases" target="_blank" rel="noopener">BUILDS</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <span class="index-mark">01 // COMPANION CONTROLLER</span>
+      <h1>Industrial Remote Control for Coding Swarms</h1>
+      <p class="lead">
+        Engineered for Daylight Computer e-paper displays, dual-screen foldables, and pocket devices. Zero telemetry, tactile contrast, instant warm session rehydration.
+      </p>
+
+      <div class="console-module" id="install">
+        <div class="module-bar">
+          <span>HOST INSTALLATION SCRIPT</span>
+          <span>CURL / BASH INTERFACE</span>
+        </div>
+        <div class="command-strip">
+          <code>curl -fsSL https://sheperd.sh | sh</code>
+          <button class="action-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://sheperd.sh | sh'); this.innerText='COPIED!'">COPY COMMAND</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="monitor-screen">
+      <div class="monitor-screen-header">
+        <span>HERDR_BRIDGE // TCP:8765</span>
+        <span>STREAM ACTIVE</span>
+      </div>
+      <div><span class="agent-tag">[daybreak/codex]</span> <span style="color: #d2a8ff;">EDIT</span> <code>HomeScreen.kt</code></div>
+      <div><span class="agent-tag">[daybreak/codex]</span> <span class="status-done">READY</span> 1 file modified (0 errors)</div>
+      <div><span class="status-user">[operator via shep]</span> Run release suite with dangermaxxing autonomy</div>
+      <div><span class="agent-tag">[daybreak/codex]</span> <span class="status-working">EXEC</span> <code>./gradlew check</code>...</div>
+    </div>
+
+    <section id="specs">
+      <div class="instrument-grid">
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 01</span>
+          <h3>Instant Warm State</h3>
+          <p>Zero latency tab switching and screen rotation. Active agent logs and output remain cached in memory for instant review without blank screens.</p>
+        </div>
+
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 02</span>
+          <h3>Daylight & E-Paper Calibration</h3>
+          <p>Formulated for monochrome transflective e-paper and high-refresh ambient screens. High-contrast typography, zero motion blur, crisp tap targets.</p>
+        </div>
+
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 03</span>
+          <h3>Foldable Dual-Pane Architecture</h3>
+          <p>Adaptive master-detail layouts. Monitor active swarm progress in the left panel while controlling live interactive terminals on the right.</p>
+        </div>
+
+        <div class="instrument-cell">
+          <span class="cell-id">SPEC // 04</span>
+          <h3>Danger Level Autonomy</h3>
+          <p>Switch between <em>0 Danger</em> (strict interactive confirmation) and <em>Dangermaxxing</em> (autonomous auto-approval on trusted agent workflows).</p>
+        </div>
+
+        <div class="instrument-cell ecosystem-unit">
+          <span class="cell-id">SUBSYSTEM // UPSTREAM</span>
+          <h3>Built on <a href="https://herdr.dev" target="_blank" rel="noopener">herdr.dev</a> Core</h3>
+          <p>Shep connects to the <strong>herdr.dev</strong> ecosystem. It interfaces with its core orchestrator and is designed to support all upcoming herdr remotes, multi-machine bridges, session multiplexing, and swarm protocol updates.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-strip">
+      <a href="https://github.com/dalnk/shep/releases" class="primary-btn" target="_blank" rel="noopener">
+        DOWNLOAD ANDROID APK
+      </a>
+      <a href="https://github.com/dalnk/shep" class="secondary-btn" target="_blank" rel="noopener">
+        VIEW REPOSITORY
+      </a>
+    </section>
+
+    <footer>
+      <div>SHEP // OPEN UTILITY COMPANION</div>
+      <div>DOMAINS: shep.work &bull; sheperd.dev &bull; sheperd.sh</div>
+    </footer>
+  </div>
+</body>
+</html>

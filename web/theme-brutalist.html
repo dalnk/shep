@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHEP(1) — MANUAL PAGE</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000000;
+      color: #00ff66;
+      font-family: 'Courier New', Courier, monospace;
+      line-height: 1.5;
+      padding: 1.5rem;
+    }
+    .container { max-width: 780px; margin: 0 auto; }
+    .theme-nav-bar {
+      border: 1px dashed #333;
+      padding: 0.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.8rem;
+    }
+    .theme-nav-bar a {
+      color: #888;
+      text-decoration: none;
+      margin-left: 0.5rem;
+    }
+    .theme-nav-bar a.active {
+      color: #00ff66;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    header {
+      border-bottom: 1px solid #00ff66;
+      padding-bottom: 0.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    h1 { font-size: 1.5rem; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+    h2 { font-size: 1.1rem; text-transform: uppercase; margin: 1.5rem 0 0.5rem; border-left: 4px solid #00ff66; padding-left: 0.5rem; }
+    p { margin-bottom: 1rem; color: #b8fcd4; }
+    .box {
+      border: 1px solid #00ff66;
+      padding: 1rem;
+      margin: 1.5rem 0;
+      background: #05140a;
+    }
+    .cmd { font-weight: bold; color: #fff; }
+    ul { list-style: square; margin-left: 1.5rem; margin-bottom: 1.5rem; color: #b8fcd4; }
+    li { margin-bottom: 0.5rem; }
+    a { color: #00ff66; }
+    .btn {
+      display: inline-block;
+      border: 1px solid #00ff66;
+      padding: 0.5rem 1rem;
+      color: #000;
+      background: #00ff66;
+      text-decoration: none;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    .btn-inv {
+      background: transparent;
+      color: #00ff66;
+    }
+    footer {
+      border-top: 1px dashed #333;
+      margin-top: 3rem;
+      padding-top: 1rem;
+      font-size: 0.8rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="theme-nav-bar">
+      [THEMES]
+      <a href="theme-industrial.html">Industrial (Braun)</a>
+      <a href="theme-epaper.html">Daylight E-Paper</a>
+      <a href="theme-brutalist.html" class="active">Hacker Monospace</a>
+      <a href="theme-nordic.html">Cyber Minimal</a>
+    </div>
+
+    <header>
+      <div>SHEP(1)</div>
+      <div>USER COMMANDS</div>
+      <div>SHEP(1)</div>
+    </header>
+
+    <h1>NAME</h1>
+    <p>shep &mdash; pocket controller for autonomous AI coding swarms</p>
+
+    <h1>SYNOPSIS</h1>
+    <div class="box">
+      <div class="cmd">$ curl -fsSL https://sheperd.sh | sh</div>
+    </div>
+
+    <h1>DESCRIPTION</h1>
+    <p>
+      Shep is a minimalist, battery-efficient companion remote designed for Daylight Computer e-paper tablets, dual-screen foldables, and pocket devices. It bridges Unix domain sockets to local TCP/tailscale mesh networks without telemetry or cloud bloat.
+    </p>
+
+    <h1>CAPABILITIES</h1>
+    <ul>
+      <li><strong>WARM CACHING:</strong> 0ms transition latency between agent sessions and screen rotations.</li>
+      <li><strong>E-PAPER TUNING:</strong> Pure contrast rendering for sunlight and zero-refresh ghosting.</li>
+      <li><strong>ADAPTIVE SPLIT:</strong> Collapsible master sidebar with interactive live streaming panes.</li>
+      <li><strong>DANGER LEVEL:</strong> Runtime switchable between 0 Danger and Dangermaxxing auto-approval.</li>
+      <li><strong>UPSTREAM CORE:</strong> Native integration with herdr.dev protocol and forthcoming remotes.</li>
+    </ul>
+
+    <h1>DOWNLOADS</h1>
+    <div style="margin: 1.5rem 0;">
+      <a href="https://github.com/dalnk/shep/releases" class="btn">[DOWNLOAD APK]</a>
+      <a href="https://github.com/dalnk/shep" class="btn btn-inv">[SOURCE ON GITHUB]</a>
+    </div>
+
+    <footer>
+      <div>SHEP v1.0.0 &bull; DOMAINS: shep.work | sheperd.dev | sheperd.sh</div>
+    </footer>
+  </div>
+</body>
+</html>

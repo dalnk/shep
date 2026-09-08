@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shep — Stealth Cyber Minimal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000205;
+      --card-bg: #080a0f;
+      --border: #151921;
+      --border-focus: #262c38;
+      --text: #ffffff;
+      --text-muted: #838a98;
+      --cyan: #5ce1e6;
+      --font-sans: 'Geist', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 0 1.5rem 5rem;
+    }
+    .container { max-width: 740px; margin: 0 auto; }
+    .theme-nav-bar {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+    .theme-nav-bar a { color: var(--text-muted); text-decoration: none; padding: 0.2rem 0.5rem; }
+    .theme-nav-bar a.active { color: var(--cyan); border: 1px solid var(--cyan); border-radius: 4px; }
+    header {
+      padding: 3.5rem 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+      color: #fff;
+      text-decoration: none;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      margin-left: 1.25rem;
+    }
+    .hero { padding: 4rem 0 2.5rem; }
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 1.25rem;
+    }
+    p.lead {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+    }
+    .install {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--cyan);
+      margin-bottom: 3.5rem;
+    }
+    .btn-copy {
+      background: #11141c;
+      border: 1px solid var(--border);
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 3.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    .full {
+      grid-column: 1 / -1;
+      border-color: rgba(92, 225, 230, 0.25);
+    }
+    .cta {
+      text-align: center;
+      padding: 3rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .btn {
+      display: inline-block;
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 1px solid var(--border);
+      margin-left: 0.75rem;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="theme-nav-bar">
+      <span>THEMES:</span>
+      <a href="theme-industrial.html">Industrial (Braun)</a>
+      <a href="theme-epaper.html">Daylight E-Paper</a>
+      <a href="theme-brutalist.html">Hacker Monospace</a>
+      <a href="theme-nordic.html" class="active">Cyber Minimal</a>
+    </div>
+
+    <header>
+      <a href="#" class="logo">Shep</a>
+      <div class="nav-links">
+        <a href="https://github.com/dalnk/shep">Source</a>
+        <a href="#specs">Features</a>
+        <a href="https://github.com/dalnk/shep/releases">Releases</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>Pocket Controller for AI Agent Swarms</h1>
+      <p class="lead">
+        Engineered for Daylight e-paper tablets, dual-screen foldables, and pocket devices. Pure stealth, zero telemetry, instant warm rehydration.
+      </p>
+
+      <div class="install">
+        <span>curl -fsSL https://sheperd.sh | sh</span>
+        <button class="btn-copy" onclick="navigator.clipboard.writeText('curl -fsSL https://sheperd.sh | sh'); this.innerText='Copied!'">Copy</button>
+      </div>
+    </section>
+
+    <div class="grid" id="specs">
+      <div class="card">
+        <h3>⚡️ Instant Warm Cache</h3>
+        <p>Switch between agent tabs and rotate screens with 0ms delay. Prior runs remain instantly readable.</p>
+      </div>
+      <div class="card">
+        <h3>📖 Daylight Calibrated</h3>
+        <p>Monochrome high-contrast design crafted for sunlight and ambient e-paper panels.</p>
+      </div>
+      <div class="card">
+        <h3>🪟 Foldable Split View</h3>
+        <p>Collapsible master sidebar and adaptive two-pane view for tablets and foldables.</p>
+      </div>
+      <div class="card">
+        <h3>🛡️ Dangermaxxing Autonomy</h3>
+        <p>Configurable agent velocity from 0 Danger to autonomous auto-approval on trusted flows.</p>
+      </div>
+      <div class="card full">
+        <h3>🌐 Built on herdr.dev Core</h3>
+        <p>Shep connects directly to herdr.dev swarms, actively supporting all remotes and session protocols.</p>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a href="https://github.com/dalnk/shep/releases" class="btn">Download APK</a>
+      <a href="https://github.com/dalnk/shep" class="btn btn-ghost">GitHub</a>
+    </div>
+
+    <footer>
+      <div>Shep &bull; companion controller</div>
+      <div>shep.work &bull; sheperd.dev &bull; sheperd.sh</div>
+    </footer>
+  </div>
+</body>
+</html>
