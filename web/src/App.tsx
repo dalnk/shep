@@ -16,9 +16,7 @@ import {
   RefreshCw,
   Copy,
   Check,
-  X,
-  History,
-  Clock
+  X
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -534,92 +532,103 @@ export function App() {
           background: 'var(--bg-surface)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
-            {/* Claude Desktop Hoverable Time Machine / Conversation Beats Tooltip */}
-            <div 
-              style={{ position: 'relative' }}
-              onMouseEnter={() => setShowHistoryMenu(true)}
-              onMouseLeave={() => setShowHistoryMenu(false)}
-            >
-              <button
-                onClick={() => setShowHistoryMenu(!showHistoryMenu)}
-                title="Conversation beats (hover to preview timeline)"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-subtle)',
-                  background: showHistoryMenu ? 'var(--bg-surface-high)' : 'transparent',
-                  color: showHistoryMenu ? 'var(--cds-clay)' : 'var(--text-secondary)',
+            {/* Claude Desktop Subtle Timeline Stripes / Beats Scrubber in top corner */}
+            {messages.length > 0 && (
+              <div 
+                style={{ 
+                  position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  height: '28px',
+                  padding: '4px 6px',
+                  borderRadius: '6px',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease'
+                  background: showHistoryMenu ? 'var(--bg-surface-high)' : 'transparent',
+                  transition: 'background 0.15s ease'
                 }}
+                onMouseEnter={() => setShowHistoryMenu(true)}
+                onMouseLeave={() => setShowHistoryMenu(false)}
               >
-                <History size={16} />
-              </button>
+                {/* The subtle timeline stripes (horizontal line of vertical tick stripes) */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  padding: '2px 4px'
+                }}>
+                  {messages.slice(-12).map((m, i, arr) => {
+                    const isLatest = i === arr.length - 1;
+                    const isUser = m.sender === 'user';
+                    return (
+                      <div
+                        key={m.id || i}
+                        style={{
+                          width: '2px',
+                          height: isLatest ? '14px' : isUser ? '10px' : '7px',
+                          borderRadius: '1px',
+                          backgroundColor: isLatest 
+                            ? 'var(--cds-clay)' 
+                            : isUser 
+                              ? 'var(--text-secondary)' 
+                              : 'rgba(120, 120, 120, 0.35)',
+                          transition: 'all 0.15s ease'
+                        }}
+                      />
+                    );
+                  })}
+                </div>
 
-              {/* Hover Tooltip / Beats Timeline Popover */}
-              {showHistoryMenu && (
-                <div 
-                  style={{
-                    position: 'absolute',
-                    top: '36px',
-                    left: '0',
-                    width: '320px',
-                    maxHeight: '400px',
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                    animation: 'fadeIn 0.12s ease'
-                  }}
-                  onMouseEnter={() => setShowHistoryMenu(true)}
-                  onMouseLeave={() => setShowHistoryMenu(false)}
-                >
-                  <div style={{
-                    padding: '10px 14px',
-                    borderBottom: '1px solid var(--border-subtle)',
-                    background: 'var(--bg-surface-high)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.04em',
-                    color: 'var(--text-secondary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Clock size={13} />
-                      THREAD TIME MACHINE
-                    </span>
-                    <span>{messages.length} TURNS</span>
-                  </div>
+                {/* Hover Tooltip / Beats Timeline Popover */}
+                {showHistoryMenu && (
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: '32px',
+                      left: '0',
+                      width: '320px',
+                      maxHeight: '380px',
+                      background: 'var(--bg-surface)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '10px',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.16)',
+                      zIndex: 100,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden'
+                    }}
+                    onMouseEnter={() => setShowHistoryMenu(true)}
+                    onMouseLeave={() => setShowHistoryMenu(false)}
+                  >
+                    <div style={{
+                      padding: '8px 12px',
+                      borderBottom: '1px solid var(--border-subtle)',
+                      background: 'var(--bg-surface-high)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}>
+                      <span>CONVERSATION BEATS</span>
+                      <span>{messages.length} TURNS</span>
+                    </div>
 
-                  <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
-                    {messages.length === 0 ? (
-                      <div style={{ padding: '16px', fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>
-                        No messages in thread yet.
-                      </div>
-                    ) : (
-                      messages.map((m, idx) => (
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '6px' }}>
+                      {messages.map((m, idx) => (
                         <div
                           key={m.id}
                           onClick={() => jumpToTurn(idx)}
                           style={{
-                            padding: '8px 10px',
+                            padding: '7px 10px',
                             borderRadius: '6px',
                             cursor: 'pointer',
                             fontSize: '12px',
                             marginBottom: '2px',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '3px',
+                            gap: '2px',
                             transition: 'background 0.12s ease'
                           }}
                           onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-surface-high)')}
@@ -641,12 +650,12 @@ export function App() {
                             {m.text.slice(0, 70) || (m.tools ? `[${m.tools.length} actions]` : '…')}
                           </div>
                         </div>
-                      ))
-                    )}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             <div>
               <div style={{ fontWeight: 700, fontSize: '15px' }}>{selectedPane?.title}</div>
