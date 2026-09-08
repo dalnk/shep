@@ -28,7 +28,7 @@ enum class ConnectionType {
 }
 
 enum class DangerLevel(val displayName: String, val description: String) {
-    ZERO_DANGER("0 Danger", "Zero autonomous risk. Never auto-proceed; explicit manual confirmation required."),
+    ZERO_DANGER("Zero", "Zero autonomous risk. Never auto-proceed; explicit manual confirmation required."),
     NORMAL("Normal", "Standard supervision. Requires manual approval when an agent pauses or requests permission."),
     DANGERMAXXING("Dangermaxxing", "Maximum autonomy. Automatically proceeds and approves paused agents so the swarm never stops.")
 }

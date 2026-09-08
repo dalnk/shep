@@ -246,7 +246,7 @@ private fun ChatBubble(
     val isTerminal = message.id.startsWith("history-")
 
     if (message.fromUser) {
-        // User query: sleek, minimal, distinct bubble/card aligned to end
+        // User query: sleek, minimal, distinct bubble aligned to end (neutral warm surface, high-contrast text)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -254,17 +254,20 @@ private fun ChatBubble(
             contentAlignment = Alignment.CenterEnd,
         ) {
             Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.onSurface,
                 shape = RoundedCornerShape(16.dp),
-                tonalElevation = 1.dp,
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                ),
                 modifier = Modifier.widthIn(max = 560.dp)
             ) {
                 Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
                     MarkdownText(
                         markdown = message.text,
                         textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Normal
                         ),
                     )
