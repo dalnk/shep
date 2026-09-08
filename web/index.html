@@ -4,20 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SHeP — Super Helpful Pocket Remote</title>
-  <meta name="description" content="A lightweight, zero-latency Android remote for herdr agent swarms. Tested on everyday phones like Nothing and Pixel, foldables, and the Daylight Computer.">
+  <meta name="description" content="A lightweight, zero-latency Android remote for herdr agent swarms. Tested on everyday phones like Nothing, Pixel Fold, and the Daylight Computer.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #141517;
-      --surface: #1b1d20;
-      --surface-elevated: #22252a;
-      --border-dark: #2a2e35;
-      --border-light: #383e47;
-      --text-main: #ebedf0;
-      --text-dim: #9aa0aa;
-      --text-muted: #676e7b;
+      /* AMOLED Pure Black & Braun Contrast Palette */
+      --bg: #000000;
+      --surface: #0e1013;
+      --surface-elevated: #16181d;
+      --border-dark: #1d2128;
+      --border-light: #2c323d;
+      --text-main: #f0f2f5;
+      --text-dim: #9aa1ad;
+      --text-muted: #5e6573;
       
       --signal-orange: #ff5500;
       --signal-amber: #e6a100;
@@ -34,7 +35,7 @@
     }
 
     body {
-      background-color: var(--bg);
+      background-color: #000000;
       color: var(--text-main);
       font-family: var(--font-ui);
       line-height: 1.55;
@@ -43,12 +44,12 @@
     }
 
     .frame {
-      max-width: 840px;
+      max-width: 860px;
       margin: 0 auto;
       border-left: 1px solid var(--border-dark);
       border-right: 1px solid var(--border-dark);
       padding: 0 2rem;
-      background: var(--bg);
+      background: #000000;
     }
 
     .utility-strip {
@@ -56,7 +57,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 1.25rem 0;
-      border-bottom: 2px solid var(--border-dark);
+      border-bottom: 1px solid var(--border-dark);
       font-family: var(--font-mono);
       font-size: 0.75rem;
       color: var(--text-muted);
@@ -143,12 +144,12 @@
     }
 
     h1 {
-      font-size: 2.85rem;
+      font-size: 3rem;
       font-weight: 800;
       letter-spacing: -0.04em;
       line-height: 1.08;
       margin-bottom: 1.25rem;
-      color: var(--text-main);
+      color: #ffffff;
     }
 
     p.lead {
@@ -161,10 +162,9 @@
 
     .console-module {
       background: var(--surface);
-      border: 1px solid var(--border-light);
+      border: 1px solid var(--border-dark);
       border-radius: 4px;
-      margin-bottom: 3.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      margin-bottom: 4rem;
     }
 
     .module-bar {
@@ -172,7 +172,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.65rem 1rem;
-      background: #111214;
+      background: #08090a;
       border-bottom: 1px solid var(--border-dark);
       font-family: var(--font-mono);
       font-size: 0.75rem;
@@ -188,7 +188,7 @@
       font-family: var(--font-mono);
       font-size: 0.95rem;
       color: var(--text-main);
-      background: #0d0e10;
+      background: #040405;
       overflow-x: auto;
     }
 
@@ -211,73 +211,56 @@
     }
 
     .action-btn:hover {
-      background: #2f343d;
-      border-color: #4b535f;
+      background: #23272f;
+      border-color: #434b57;
     }
 
     /* ========================================================= */
-    /* PURE CSS SMOOTH FORM-FACTOR MORPHING DEMO */
+    /* CLEAN ADAPTIVE HARDWARE SHOWCASE (NO BOX, AMOLED BLACK)   */
     /* ========================================================= */
     .device-showcase-stage {
-      background: #0b0c0e;
-      border: 1px solid var(--border-dark);
-      border-radius: 6px;
-      padding: 2.25rem 1rem 2rem;
-      margin-bottom: 3.5rem;
-      position: relative;
-      overflow: hidden;
+      background: transparent;
+      padding: 0 0 3.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    .stage-label-bar {
-      width: 100%;
-      max-width: 680px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-bottom: 1.75rem;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px solid #1a1d22;
-      letter-spacing: 0.06em;
-    }
-
-    /* Device chassis that morphs width and height smoothly */
+    /* Device chassis morphs between exact real hardware aspect ratios:
+       1. Nothing Phone: 20:9 (210px x 472px)
+       2. Pixel Fold Unfolded: 6:5 (440px x 367px)
+       3. Daylight Computer Tablet: 4:3 (560px x 420px)
+    */
     .device-chassis {
       background: #000000;
-      border: 2px solid #282c34;
-      border-radius: 20px;
-      padding: 6px;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.7), inset 0 0 0 1px #16181d;
+      border: 2px solid #232730;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 0 1px #111317;
       transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       position: relative;
-      animation: morphDevice 12s infinite ease-in-out;
+      animation: morphDeviceExact 14s infinite ease-in-out;
       transform-origin: center top;
       overflow: hidden;
     }
 
     /* Screen contents */
     .device-screen {
-      background: #111215;
-      border-radius: 14px;
+      background: #0a0b0d;
+      border-radius: 20px;
       overflow: hidden;
       flex: 1;
       display: flex;
       flex-direction: column;
-      border: 1px solid #1c1f26;
+      border: 1px solid #191c22;
       position: relative;
     }
 
-    /* Top App Bar inside Shep (CenterAlignedTopAppBar replica) */
+    /* Top App Bar inside Shep */
     .app-top-bar {
-      background: #16181d;
-      border-bottom: 1px solid #232730;
+      background: #111317;
+      border-bottom: 1px solid #1f232b;
       padding: 10px 14px;
       display: flex;
       align-items: center;
@@ -302,7 +285,7 @@
       font-weight: 800;
       font-size: 0.82rem;
       letter-spacing: -0.02em;
-      color: #fff;
+      color: #ffffff;
     }
 
     .danger-pill {
@@ -317,7 +300,7 @@
       letter-spacing: 0.04em;
     }
 
-    /* App Workspace: Sidebar + Chat Pane */
+    /* Workspace */
     .app-body {
       flex: 1;
       display: flex;
@@ -325,22 +308,22 @@
       position: relative;
     }
 
-    /* Sidebar (collapses on phone mode, expands on unfolded/tablet) */
+    /* Sidebar (collapses on Nothing phone, expands on Pixel Fold / Daylight) */
     .app-sidebar {
-      background: #131518;
-      border-right: 1px solid #21242c;
+      background: #0e1014;
+      border-right: 1px solid #1c2027;
       display: flex;
       flex-direction: column;
       padding: 10px 8px;
       overflow: hidden;
       flex-shrink: 0;
       transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-      animation: morphSidebar 12s infinite ease-in-out;
+      animation: morphSidebarExact 14s infinite ease-in-out;
     }
 
     .sidebar-search {
-      background: #1c1e24;
-      border: 1px solid #282c36;
+      background: #16181e;
+      border: 1px solid #232731;
       border-radius: 9999px;
       padding: 4px 8px;
       display: flex;
@@ -359,7 +342,7 @@
       flex-shrink: 0;
     }
     .dot-working { background: var(--signal-orange); }
-    .dot-idle { background: #555b66; }
+    .dot-idle { background: #474c55; }
 
     .sidebar-item {
       display: flex;
@@ -375,7 +358,7 @@
     }
 
     .sidebar-item.active {
-      background: #1f222a;
+      background: #1c1f26;
       color: #fff;
       font-weight: 600;
     }
@@ -387,15 +370,15 @@
       margin-left: auto;
     }
     .badge-working { background: rgba(255, 85, 0, 0.2); color: var(--signal-orange); }
-    .badge-idle { background: rgba(154, 160, 170, 0.15); color: var(--text-muted); }
+    .badge-idle { background: rgba(154, 160, 170, 0.12); color: var(--text-muted); }
 
-    /* Chat / Remote Pane */
+    /* Chat Pane */
     .app-chat-pane {
       flex: 1;
       display: flex;
       flex-direction: column;
       padding: 10px 14px;
-      background: #0d0e11;
+      background: #07080a;
       overflow: hidden;
     }
 
@@ -404,7 +387,7 @@
       justify-content: space-between;
       align-items: center;
       padding-bottom: 6px;
-      border-bottom: 1px solid #1a1d24;
+      border-bottom: 1px solid #16191f;
       font-family: var(--font-mono);
       font-size: 0.68rem;
       margin-bottom: 8px;
@@ -421,8 +404,8 @@
     }
 
     .bubble-agent {
-      background: #171920;
-      border: 1px solid #242933;
+      background: #121418;
+      border: 1px solid #1e222b;
       color: #cfd5df;
       align-self: flex-start;
       border-bottom-left-radius: 4px;
@@ -435,18 +418,18 @@
     }
 
     .bubble-user {
-      background: #2a2e38;
+      background: #242730;
       color: #fff;
       align-self: flex-end;
       margin-left: auto;
       border-bottom-right-radius: 4px;
     }
 
-    /* Minimal integrated rounded input bar matching ChatInputBar */
+    /* Minimal integrated rounded input bar */
     .app-input-bar {
       margin-top: auto;
-      background: #14161b;
-      border: 1px solid #282d38;
+      background: #0f1115;
+      border: 1px solid #222630;
       border-radius: 9999px;
       padding: 5px 6px 5px 12px;
       display: flex;
@@ -472,11 +455,13 @@
 
     /* Mode indicator label below device */
     .mode-caption {
-      margin-top: 1.5rem;
+      margin-top: 1.75rem;
       display: flex;
-      gap: 1.5rem;
+      gap: 1.25rem;
       font-family: var(--font-mono);
       font-size: 0.72rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .mode-tab {
@@ -486,37 +471,37 @@
       transition: all 0.4s ease;
     }
 
-    /* CSS Keyframes for Seamless Morphing */
-    /* 
-       0% - 30%: Phone mode (folded, compact)
-       35% - 65%: Unfolded dual-screen foldable
-       70% - 100%: Big landscape tablet / Daylight computer
+    /* Precise Aspect Ratio Keyframes:
+       0% - 28%: Nothing Phone (20:9 ratio -> 210px x 472px)
+       34% - 62%: Pixel Fold Unfolded (6:5 ratio -> 440px x 367px)
+       68% - 95%: Daylight Computer (4:3 ratio -> 560px x 420px)
     */
-    @keyframes morphDevice {
+    @keyframes morphDeviceExact {
       0%, 28% {
-        /* Folded Phone (Nothing Phone / Pixel) */
-        width: 250px;
-        height: 380px;
+        width: 216px;
+        height: 480px;
+        border-radius: 28px;
       }
       34%, 62% {
-        /* Unfolded Dual-Screen Foldable */
         width: 440px;
-        height: 390px;
+        height: 367px;
+        border-radius: 20px;
       }
       68%, 95% {
-        /* Big Landscape Tablet / Daylight Computer */
-        width: 620px;
-        height: 360px;
+        width: 560px;
+        height: 420px;
+        border-radius: 16px;
       }
       100% {
-        width: 250px;
-        height: 380px;
+        width: 216px;
+        height: 480px;
+        border-radius: 28px;
       }
     }
 
-    @keyframes morphSidebar {
+    @keyframes morphSidebarExact {
       0%, 28% {
-        /* Collapsed in single phone view */
+        /* Collapsed completely on Nothing phone */
         width: 0px;
         padding-left: 0px;
         padding-right: 0px;
@@ -524,18 +509,18 @@
         border-right: none;
       }
       34%, 62% {
-        /* Split view on foldables */
+        /* Unfolded Pixel Fold: Split View */
         width: 140px;
-        padding: 8px;
+        padding: 10px 8px;
         opacity: 1;
-        border-right: 1px solid #262a32;
+        border-right: 1px solid #1c2027;
       }
       68%, 95% {
-        /* Expanded master sidebar on Daylight tablet */
-        width: 180px;
-        padding: 8px 10px;
+        /* Daylight Tablet: Master Sidebar */
+        width: 175px;
+        padding: 10px 8px;
         opacity: 1;
-        border-right: 1px solid #262a32;
+        border-right: 1px solid #1c2027;
       }
       100% {
         width: 0px;
@@ -546,9 +531,9 @@
     }
 
     /* Indicators sync */
-    .mode-1 { animation: activeMode1 12s infinite; }
-    .mode-2 { animation: activeMode2 12s infinite; }
-    .mode-3 { animation: activeMode3 12s infinite; }
+    .mode-1 { animation: activeMode1 14s infinite; }
+    .mode-2 { animation: activeMode2 14s infinite; }
+    .mode-3 { animation: activeMode3 14s infinite; }
 
     @keyframes activeMode1 {
       0%, 28% { color: var(--signal-orange); font-weight: 700; background: rgba(255, 85, 0, 0.1); }
@@ -676,11 +661,11 @@
 
     .secondary-btn:hover {
       background: var(--surface);
-      border-color: #4b535f;
+      border-color: #434b57;
     }
 
     footer {
-      border-top: 2px solid var(--border-dark);
+      border-top: 1px solid var(--border-dark);
       padding: 1.75rem 0;
       display: flex;
       justify-content: space-between;
@@ -750,13 +735,8 @@
       </div>
     </section>
 
-    <!-- SHeP Remote Live Interface Showcase -->
+    <!-- Seamless Hardware Form-Factor Showcase -->
     <div class="device-showcase-stage">
-      <div class="stage-label-bar">
-        <span>INTERFACE // ADAPTIVE VIEWPORT</span>
-        <span>CONNECTED // neo.local:8765</span>
-      </div>
-
       <div class="device-chassis">
         <div class="device-screen">
           <!-- Top App Bar exactly matching HomeScreen / ChatScreen -->
@@ -826,11 +806,11 @@
         </div>
       </div>
 
-      <!-- Mode Caption synchronized to the CSS animation loop -->
+      <!-- Real Hardware Calibration Caption -->
       <div class="mode-caption">
-        <span class="mode-tab mode-1">1. FOLDED PHONE (NOTHING / PIXEL)</span>
-        <span class="mode-tab mode-2">2. DUAL-SCREEN UNFOLDED</span>
-        <span class="mode-tab mode-3">3. DAYLIGHT TABLET</span>
+        <span class="mode-tab mode-1">1. NOTHING PHONE (20:9)</span>
+        <span class="mode-tab mode-2">2. PIXEL FOLD UNFOLDED (6:5)</span>
+        <span class="mode-tab mode-3">3. DAYLIGHT COMPUTER (4:3)</span>
       </div>
     </div>
 
@@ -869,7 +849,7 @@
         <div class="instrument-cell ecosystem-unit" style="border-top: 1px dashed var(--border-light); background: transparent;">
           <span class="cell-id">ORIGIN // WHY SHEP EXISTS</span>
           <h3>Built because there was no Gemini remote</h3>
-          <p>There simply wasn't a dedicated, fast remote control app for Gemini and autonomous agent swarms. We like Gemini, and we built SHeP to steer swarms alongside our own agent, <strong>_</strong> (check out <a href="https://underclass.tech" target="_blank" rel="noopener" style="color: var(--text-main); text-decoration: underline; text-underline-offset: 3px;">underclass.tech</a>). We tested it across real hardware — from everyday Nothing and Pixel phones, to foldables, to the Daylight Computer e-paper tablet.</p>
+          <p>There simply wasn't a dedicated, fast remote control app for Gemini and autonomous agent swarms. We like Gemini, and we built SHeP to steer swarms alongside our own agent, <strong>_</strong> (check out <a href="https://underclass.tech" target="_blank" rel="noopener" style="color: var(--text-main); text-decoration: underline; text-underline-offset: 3px;">underclass.tech</a>). We tested it across real hardware — from everyday Nothing and Pixel phones, to foldables, to the <a href="https://daylightcomputer.com" target="_blank" rel="noopener" style="color: var(--text-main); text-decoration: underline; text-underline-offset: 3px;">Daylight Computer</a> e-paper tablet.</p>
         </div>
       </div>
     </section>
