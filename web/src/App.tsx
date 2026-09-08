@@ -9,6 +9,8 @@ import {
   WifiOff, 
   Terminal 
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Pane {
   id: string;
@@ -441,12 +443,10 @@ export function App() {
                     )}
 
                     {/* Clean response text directly on canvas */}
-                    <div style={{
-                      fontSize: '14.5px',
-                      lineHeight: '1.6',
-                      marginTop: '10px'
-                    }}>
-                      {msg.text}
+                    <div style={{ marginTop: '10px' }} className="prose-content">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.text}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 )}
