@@ -291,17 +291,11 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(20.dp)
-                            )
                             Text(
-                                text = "Inbox · Completed Tasks",
+                                text = "Completed Tasks",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.tertiary
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         Row(
@@ -525,24 +519,15 @@ private fun DoneAgentInboxCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Surface(
-                modifier = Modifier.size(36.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = "Completed",
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            AgentAvatar(
+                agentName = pane.agentName,
+                isSelected = false,
+                modifier = Modifier.size(36.dp)
+            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = pane.title.ifBlank { "Pane ${pane.id}" },

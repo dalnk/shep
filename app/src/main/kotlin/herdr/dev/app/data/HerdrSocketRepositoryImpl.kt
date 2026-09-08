@@ -40,6 +40,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.io.OutputStream
 import java.net.Socket
@@ -113,6 +114,9 @@ class HerdrSocketRepositoryImpl @Inject constructor(
         }
         scope.launch {
             settingsRepository.serverPort.collect { currentPort = it.toIntOrNull() ?: 8765 }
+        }
+        scope.launch {
+            restoreTranscriptsFromDisk()
         }
     }
 
@@ -365,6 +369,7 @@ class HerdrSocketRepositoryImpl @Inject constructor(
             question = chatQuestion,
         )
         transcriptCache[paneId] = res
+        persistPaneTranscriptToDisk(paneId, res)
         return res
     }
 
@@ -598,6 +603,111 @@ class HerdrSocketRepositoryImpl @Inject constructor(
         "done" -> AgentState.DONE
         "idle", "unknown" -> AgentState.IDLE
         else -> AgentState.IDLE
+    }
+
+    private fun getTranscriptCacheDir(): File {
+        val dir = File(settingsRepository.cacheDir, "transcripts")
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        return dir
+    }
+
+    private fun persistPaneTranscriptToDisk(paneId: String, result: PaneTranscriptResult) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val safePaneId = paneId.replace(':', '_').replace('/', '_')
+                val file = File(getTranscriptCacheDir(), "$safePaneId.json")
+                val jsonObject = buildJsonObject {
+                    put("pane_id", paneId)
+                    result.title?.let { put("title", it) }
+                    result.agentName?.let { put("agent", it) }
+                    result.model?.let { put("model", it) }
+                    result.modelShortname?.let { put("model_shortname", it) }
+                    result.contextTokens?.let { put("context_tokens", it) }
+                    result.activeAction?.let { put("active_action", it) }
+                    put("messages", buildJsonArray {
+                        result.messages.forEach { msg ->
+                            add(buildJsonObject {
+                                put("id", msg.id)
+                                put("pane_id", msg.paneId)
+                                put("text", msg.text)
+                                put("from_user", msg.fromUser)
+                                put("created_at_millis", msg.createdAtMillis)
+                                msg.thinking?.let { put("thinking", it) }
+                                put("tools", buildJsonArray { msg.tools.forEach { t -> add(t) } })
+                            })
+                        }
+                    })
+                }
+                file.writeText(jsonObject.toString())
+            } catch (e: Exception) {
+                Log.w(TAG, "failed to persist transcript for $paneId: ${e.message}")
+            }
+        }
+    }
+
+    private fun restoreTranscriptsFromDisk() {
+        try {
+            val dir = getTranscriptCacheDir()
+            val files = dir.listFiles { _, name -> name.endsWith(".json") } ?: return
+            for (file in files) {
+                try {
+                    val content = file.readText()
+                    val obj = json.parseToJsonElement(content).jsonObject
+                    val paneId = obj["pane_id"]?.jsonPrimitive?.contentOrNull() ?: continue
+                    val title = obj["title"]?.jsonPrimitive?.contentOrNull()
+                    val agent = obj["agent"]?.jsonPrimitive?.contentOrNull()
+                    val model = obj["model"]?.jsonPrimitive?.contentOrNull()
+                    val modelShortname = obj["model_shortname"]?.jsonPrimitive?.contentOrNull()
+                    val contextTokens = obj["context_tokens"]?.jsonPrimitive?.contentOrNull()?.toIntOrNull()
+                    val activeAction = obj["active_action"]?.jsonPrimitive?.contentOrNull()
+                    val msgsArray = obj["messages"]?.jsonArray ?: kotlinx.serialization.json.JsonArray(emptyList())
+                    val messages = mutableListOf<ChatMessage>()
+                    for (mElem in msgsArray) {
+                        val mObj = mElem.jsonObject
+                        val id = mObj["id"]?.jsonPrimitive?.contentOrNull() ?: UUID.randomUUID().toString()
+                        val mPaneId = mObj["pane_id"]?.jsonPrimitive?.contentOrNull() ?: paneId
+                        val text = mObj["text"]?.jsonPrimitive?.contentOrNull() ?: ""
+                        val fromUser = mObj["from_user"]?.jsonPrimitive?.contentOrNull()?.toBooleanStrictOrNull() ?: false
+                        val createdAt = mObj["created_at_millis"]?.jsonPrimitive?.contentOrNull()?.toLongOrNull() ?: 0L
+                        val thinking = mObj["thinking"]?.jsonPrimitive?.contentOrNull()
+                        val toolsArray = mObj["tools"]?.jsonArray
+                        val tools = toolsArray?.mapNotNull { it.jsonPrimitive.contentOrNull() } ?: emptyList()
+                        messages.add(
+                            ChatMessage(
+                                id = id,
+                                paneId = mPaneId,
+                                text = text,
+                                fromUser = fromUser,
+                                createdAtMillis = createdAt,
+                                thinking = thinking,
+                                tools = tools,
+                            )
+                        )
+                    }
+                    if (messages.isNotEmpty()) {
+                        transcriptCache.putIfAbsent(
+                            paneId,
+                            PaneTranscriptResult(
+                                title = title,
+                                agentName = agent,
+                                model = model,
+                                modelShortname = modelShortname,
+                                contextTokens = contextTokens,
+                                activeAction = activeAction,
+                                messages = messages,
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "error reading cached transcript from ${file.name}: ${e.message}")
+                }
+            }
+            Log.i(TAG, "restored ${transcriptCache.size} transcripts from disk cache")
+        } catch (e: Exception) {
+            Log.w(TAG, "restoreTranscriptsFromDisk failed: ${e.message}")
+        }
     }
 }
 
