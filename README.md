@@ -39,9 +39,15 @@ Shepard connects directly to your workstation or compute swarm running `herdr` o
 
 ## 🚀 Getting Started
 
-### 1. Start the Bridge on Host (Mac / Linux)
+### 1. One-Line Setup (Mac / Linux)
 
-Run the Python daemon bridge on your host machine where `herdr` is running:
+Run the quickstart installer directly:
+
+```bash
+curl -fsSL https://sheperd.sh | sh
+```
+
+Or start the bridge manually from source:
 
 ```bash
 python3 bridge/herdr-bridge.py -v
